@@ -12,4 +12,5 @@ pub fn load_dataset(config: &Config) {
     let content = fs::read_to_string(config.filename()).unwrap();
     println!("Successfuly loaded csv from {}", config.filename());
     println!("{content}");
+    println!("Exiting")
 }
