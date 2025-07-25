@@ -1,4 +1,4 @@
-use csv_processor::{Command, parse_config};
+use csv_processor::{Command, load_dataset, parse_config};
 use std::{env, process};
 
 fn main() {
@@ -20,4 +20,6 @@ fn main() {
             println!("Calculating statistics for file: {}", config.filename());
         }
     }
+
+    load_dataset(&config);
 }
