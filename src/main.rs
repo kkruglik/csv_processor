@@ -2,7 +2,7 @@ use csv_processor::{Command, load_dataset, parse_config};
 use std::{env, process};
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
+    let args: Vec<String> = env::args().collect();
 
     let config = match parse_config(&args) {
         Ok(config) => config,
@@ -21,5 +21,6 @@ fn main() {
         }
     }
 
-    load_dataset(&config);
+    let dataset = load_dataset(&config).unwrap();
+    println!("{:?}", dataset);
 }
