@@ -1,2 +1,11 @@
-col1,col2
-val1,val2
+id,name,age,salary,department,active,start_date,score
+1,Alice Smith,28,75000.50,Engineering,true,2021-03-15,8.7
+2,Bob Johnson,,65000,Marketing,false,2020-11-22,
+3,Carol Davis,35,NA,Engineering,true,,9.2
+4,,29,58000.75,Sales,true,2022-01-10,7.8
+5,David Wilson,42,95000,Engineering,,2019-08-05,9.1
+6,Eva Brown,31,72000,Marketing,false,2021-07-18,6.9
+7,Frank Miller,,NA,Sales,true,2023-02-14,
+8,Grace Lee,26,67000.25,,true,2022-05-30,8.3
+9,Henry Taylor,38,82000,Engineering,false,,7.5
+10,,33,NA,Marketing,true,2020-12-08,
