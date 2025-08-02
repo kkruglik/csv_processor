@@ -2,26 +2,57 @@ use crate::Config;
 use csv::Reader;
 use std::fs;
 
-#[derive(Debug)]
-pub enum CsvError {
-    IoError(std::io::Error),
-    ParseError(csv::Error),
-    FileNotFound(String),
-}
-
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Dataset {
     headers: Vec<String>,
     rows: Vec<Vec<String>>,
     file_size: usize,
     rows_count: usize,
     cols_count: usize,
+    pub columns: Vec<Vec<CellValue>>,
+}
+
+fn parse_cell(cell: &str) -> CellValue {
+    if cell.is_empty() || cell.to_lowercase() == "na" {
+        return CellValue::Null;
+    }
+
+    if let Ok(val) = cell.parse::<i64>() {
+        return CellValue::Integer(val);
+    }
+
+    if let Ok(val) = cell.parse::<f64>() {
+        return CellValue::Float(val);
+    }
+
+    match cell.to_lowercase().as_str() {
+        "true" | "1" | "yes" => return CellValue::Boolean(true),
+        "false" | "0" | "no" => return CellValue::Boolean(false),
+        _ => {}
+    }
+
+    CellValue::Str(cell.to_string())
 }
 
 impl Dataset {
     fn new(headers: Vec<String>, rows: Vec<Vec<String>>, file_size: usize) -> Dataset {
         let rows_count = rows.len();
         let cols_count = headers.len();
+        let columns = {
+            let mut result = Vec::new();
+            for index in 0..cols_count {
+                let new_col = rows
+                    .iter()
+                    .map(|row| {
+                        row.get(index)
+                            .map(|s| parse_cell(s))
+                            .unwrap_or(CellValue::Null)
+                    })
+                    .collect();
+                result.push(new_col);
+            }
+            result
+        };
 
         Dataset {
             headers,
@@ -29,6 +60,7 @@ impl Dataset {
             file_size,
             rows_count,
             cols_count,
+            columns,
         }
     }
 
@@ -51,17 +83,31 @@ impl Dataset {
     pub fn col_count(&self) -> usize {
         self.cols_count
     }
-}
 
-impl From<std::io::Error> for CsvError {
-    fn from(error: std::io::Error) -> Self {
-        CsvError::IoError(error)
+    fn get_column(&self, column_index: usize) -> Vec<&str> {
+        self.rows
+            .iter()
+            .map(|row| row.get(column_index).map(|s| s.as_str()).unwrap_or(""))
+            .collect()
     }
-}
 
-impl From<csv::Error> for CsvError {
-    fn from(error: csv::Error) -> Self {
-        CsvError::ParseError(error)
+    fn get_row(&self, row_index: usize) -> Option<&Vec<String>> {
+        self.rows().get(row_index)
+    }
+
+    pub fn get_column_by_name(&self, column_name: &str) -> Option<Vec<&str>> {
+        self.headers()
+            .iter()
+            .position(|h| h == column_name)
+            .map(|index| self.get_column(index))
+    }
+
+    pub fn get_column_by_index(&self, column_index: usize) -> Option<Vec<&str>> {
+        if column_index < self.headers().len() {
+            Some(self.get_column(column_index))
+        } else {
+            None
+        }
     }
 }
 

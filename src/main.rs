@@ -1,4 +1,4 @@
-use csv_processor::{Command, load_dataset, parse_config};
+use csv_processor::{Command, load_dataframe, parse_config};
 use std::{env, process};
 
 fn main() {
@@ -21,6 +21,8 @@ fn main() {
         }
     }
 
-    let dataset = load_dataset(&config).unwrap();
-    println!("{:?}", dataset);
+    let dataframe = load_dataframe(&config).unwrap();
+    println!("{:?}", dataframe);
+    println!("{:?}", dataframe.rows());
+    println!("{:?}", dataframe.columns());
 }

@@ -2,99 +2,55 @@
 
 ## Project Description
 
-A high-performance command-line tool for CSV data analysis built in Rust. Provides fast analytics operations like missing value detection and statistical calculations on CSV datasets.
+A command-line tool for CSV data analysis built in Rust. Supports missing value detection and statistical calculations on CSV datasets.
 
 ## Architecture
 
 ### Core Principles
-- **Functional design**: Data structures + pure functions over object-oriented patterns
-- **Single responsibility**: Each module handles one concern
-- **Immutable data flow**: Transform data rather than mutate state
-- **Rust idioms**: Leverage ownership system and error handling
+- Functional design with immutable data flow
+- Single responsibility per module
+- Typed column system for performance
 
 ### Data Flow
 ```
-User Input → Config → Dataset → AnalysisResult → Formatted Output
+CLI Args → Config → DataFrame → Analysis → Output
 ```
 
 ## Project Structure
 
 ```
 src/
-├── lib.rs           # Public API, re-exports
-├── config.rs        # ✅ CLI parsing, user configuration
-├── parser.rs        # 🔜 CSV loading, Dataset struct
-├── analyzer.rs      # 🔜 Analysis functions
+├── lib.rs           # ✅ Public API, re-exports
+├── config.rs        # ✅ CLI parsing (Command enum, Config struct)
+├── types.rs         # ✅ Core types (CellValue, Dtype, CsvError)
+├── dataframe/       # ✅ Data structures and CSV loading
+│   ├── mod.rs       # ✅ DataFrame with typed columns
+│   ├── loader.rs    # ✅ CSV file loading
+│   └── columns.rs   # ✅ ColumnArray trait, typed column implementations
+├── analyzer.rs      # 🔜 Analysis functions (structure ready)
 ├── reporter.rs      # 🔜 Output formatting
-└── main.rs          # CLI entry point
+└── main.rs          # ✅ CLI entry point
 ```
 
-## Core Data Structures
+## Key Design Decisions
 
-### Configuration Layer
-```rust
-struct Config {
-    command: Command,
-    filename: String,
-}
+### Typed Column System
+- `DataFrame` stores both raw string data and typed columns
+- `ColumnArray` trait provides polymorphic access to different column types
+- Automatic type inference (Integer → Float → Boolean → String)
 
-enum Command {
-    CheckNAs,
-    CalculateStatistics,
-}
-```
+### Error Handling
+- Custom `CsvError` enum for specific error types
+- `Result<T, E>` pattern throughout for explicit error handling
 
-### Data Layer
-```rust
-struct Dataset {
-    headers: Vec<String>,
-    rows: Vec<Vec<String>>,
-}
-```
+### Core Components
+- **Config**: CLI argument parsing with Command enum
+- **DataFrame**: Main data container with metadata and typed columns  
+- **ColumnArray**: Trait for type-specific column operations
+- **CellValue**: Enum for all possible cell values including nulls
 
-### Analysis Layer
-```rust
-enum AnalysisResult {
-    NAAnalysis(NAResult),
-    Statistics(StatisticsResult),
-}
-
-struct NAResult {
-    total_cells: usize,
-    na_count: usize,
-    na_by_column: HashMap<String, usize>,
-}
-```
-
-## Core Functions
-
-### Processing Pipeline
-```rust
-// Load CSV data
-fn load_dataset(filename: &str) -> Result<Dataset, CsvError>
-
-// Analysis operations
-fn analyze_nas(dataset: &Dataset) -> NAResult
-fn analyze_statistics(dataset: &Dataset) -> StatisticsResult
-
-// Output formatting
-fn format_result(result: &AnalysisResult) -> String
-```
-
-### Main Workflow
-```rust
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = parse_config(&args)?;
-    let dataset = load_dataset(config.filename())?;
-    let result = analyze(&dataset, config.command());
-    println!("{}", format_result(&result));
-}
-```
-
-## Design Benefits
-
-- **Testable**: Each component can be tested in isolation
-- **Extensible**: Easy to add new commands and analysis types
-- **Memory efficient**: Process data without excessive copying
-- **Performance**: Rust's zero-cost abstractions and ownership system
-- **Maintainable**: Clear separation of concerns
+## Current Status
+- ✅ Data loading and parsing complete
+- ✅ Typed column system implemented
+- 🔜 Analysis functions (structure ready, implementation needed)
+- 🔜 Output formatting

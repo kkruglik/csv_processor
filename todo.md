@@ -7,19 +7,27 @@
 - [x] Basic test framework
 - [x] Module structure planning
 
-## Phase 2: Data Loading 🔜
-- [ ] Create `Dataset` struct (`parser.rs`)
-- [ ] Implement CSV file reading with `csv` crate
-- [ ] Add CSV parsing error handling
-- [ ] Basic data validation
-- [ ] Unit tests for CSV loading
+## Phase 2: Data Loading ✅ (Mostly Complete)
+- [x] Create `DataFrame` struct (`dataframe/mod.rs`) 
+- [x] Implement CSV file reading with `csv` crate (`dataframe/loader.rs`)
+- [x] Add CSV parsing error handling (`types.rs` - `CsvError`)
+- [x] Implement typed column system (`dataframe/columns.rs`)
+  - [x] `ColumnArray` trait for polymorphic columns
+  - [x] Typed columns: `IntegerColumn`, `FloatColumn`, `StringColumn`, `BooleanColumn`
+  - [x] Automatic type inference and parsing
+- [x] Basic data validation and null handling
+- [ ] Unit tests for CSV loading (parser_tests.rs commented out - needs updating)
 
-## Phase 3: NA Analysis 🔜
-- [ ] Create `NAResult` struct (`analyzer.rs`)
-- [ ] Implement `analyze_nas()` function
-- [ ] Count missing values by column
-- [ ] Calculate NA percentages
+## Phase 3: NA Analysis 🔄 (Structure Ready)
+- [x] Create analysis structures (`analyzer.rs`)
+  - [x] `ColumnInfo` struct with statistics fields
+  - [x] Function signatures defined
+- [ ] Implement `analyze_nans()` function
+  - [ ] Count missing values by column using `ColumnArray.null_count()`
+  - [ ] Calculate NA percentages per column
+  - [ ] Return `ColumnInfo` for each column
 - [ ] Integration tests with sample data
+- [ ] Wire up analysis to main CLI flow
 
 ## Phase 4: Output Formatting 🔜
 - [ ] Create basic reporter (`reporter.rs`)
@@ -27,10 +35,15 @@
 - [ ] Table output formatting
 - [ ] CLI integration and testing
 
-## Phase 5: Statistics Analysis 🔜
-- [ ] Create `StatisticsResult` struct
-- [ ] Implement basic statistics (mean, median, mode)
-- [ ] Handle numeric vs text columns
+## Phase 5: Statistics Analysis 🔄 (Structure Ready)
+- [x] Create statistics structures (`analyzer.rs`)
+  - [x] `ColumnInfo` struct with statistics fields (min, max, mean, median, std, var)
+  - [x] Function signatures for statistics functions
+- [ ] Implement statistics calculation functions
+  - [ ] `calculate_mean()`, `calculate_median()`, `calculate_std()`, `calculate_variance()`
+  - [ ] `calculate_max()`, `calculate_min()`
+  - [ ] Handle numeric vs text columns appropriately
+- [ ] Implement `analyze_statistics()` function
 - [ ] Add statistics to result formatting
 
 ## Phase 6: Polish & Performance 📋
@@ -48,12 +61,25 @@
 - [ ] Configuration file support
 
 ## Learning Goals
+
+### Rust Fundamentals
 - [x] Rust project structure and modules
-- [x] Error handling with custom types
+- [x] Error handling with custom types (`Result<T,E>`, custom error enums)
 - [x] Testing patterns in Rust
-- [ ] Working with external crates (`csv`)
+- [x] Working with external crates (`csv`)
+- [x] Trait system and dynamic dispatch (`ColumnArray` trait)
+- [x] Enums with data (`CellValue`, `Dtype`)
 - [ ] Memory-efficient data processing
 - [ ] Performance optimization techniques
+
+### For Python Developers - Key Concepts to Master
+- [x] **Ownership system** - understand borrowing vs Python's garbage collection
+- [x] **Pattern matching** - `match` expressions vs Python's if/elif
+- [x] **Traits vs Inheritance** - composition over inheritance patterns
+- [x] **Option<T> vs None** - explicit null handling vs Python's implicit None
+- [x] **Result<T,E> vs Exceptions** - explicit error handling vs try/catch
+- [ ] **Lifetimes** - when working with references (not needed yet in this project)
+- [ ] **Iterators and closures** - functional programming patterns
 
 ## Success Criteria
 - Tool processes CSV files faster than equivalent Python scripts
