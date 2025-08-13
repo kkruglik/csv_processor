@@ -18,14 +18,12 @@
 - [x] Basic data validation and null handling
 - [ ] Unit tests for CSV loading (parser_tests.rs commented out - needs updating)
 
-## Phase 3: NA Analysis 🔄 (Structure Ready)
-- [x] Create analysis structures (`analyzer.rs`)
-  - [x] `ColumnInfo` struct with statistics fields
-  - [x] Function signatures defined
-- [ ] Implement `analyze_nans()` function
-  - [ ] Count missing values by column using `ColumnArray.null_count()`
-  - [ ] Calculate NA percentages per column
-  - [ ] Return `ColumnInfo` for each column
+## Phase 3: NA Analysis 🔄 (Trait-Based Approach)
+- [x] `ColumnArray` trait provides `null_count()` method for missing value analysis
+- [ ] Implement `analyze_nans()` function using trait methods:
+  - [ ] Use `ColumnArray.null_count()` for missing value counts
+  - [ ] Calculate NA percentages per column using `len()` and `null_count()`
+  - [ ] Return structured analysis results
 - [ ] Integration tests with sample data
 - [ ] Wire up analysis to main CLI flow
 
@@ -35,15 +33,20 @@
 - [ ] Table output formatting
 - [ ] CLI integration and testing
 
-## Phase 5: Statistics Analysis 🔄 (Structure Ready)
-- [x] Create statistics structures (`analyzer.rs`)
-  - [x] `ColumnInfo` struct with statistics fields (min, max, mean, median, std, var)
-  - [x] Function signatures for statistics functions
-- [ ] Implement statistics calculation functions
-  - [ ] `calculate_mean()`, `calculate_median()`, `calculate_std()`, `calculate_variance()`
-  - [ ] `calculate_max()`, `calculate_min()`
-  - [ ] Handle numeric vs text columns appropriately
-- [ ] Implement `analyze_statistics()` function
+## Phase 5: Statistics Analysis 🔄 (Trait-Based Approach)
+- [x] Create `ChunkAgg<T>` trait for column-level aggregations (`dataframe/aggregation.rs`)
+- [x] Implement basic statistical operations for `IntegerColumn`:
+  - [x] `sum()`, `min()`, `max()`, `mean()` methods
+- [ ] Extend aggregation implementations:
+  - [ ] Complete `FloatColumn` aggregations (sum, min, max, mean, std, variance)
+  - [ ] Add `StringColumn` aggregations (count, mode, unique values)
+  - [ ] Add `BooleanColumn` aggregations (count true/false, percentage)
+- [ ] Add advanced statistical operations:
+  - [ ] `median()`, `mode()`, `variance()` methods to `ChunkAgg` trait
+  - [ ] Implement for all relevant column types
+- [ ] Update `analyzer.rs` to orchestrate column aggregations:
+  - [ ] `analyze_statistics()` function using trait methods
+  - [ ] Remove old individual calculation functions
 - [ ] Add statistics to result formatting
 
 ## Phase 6: Polish & Performance 📋
@@ -68,6 +71,8 @@
 - [x] Testing patterns in Rust
 - [x] Working with external crates (`csv`)
 - [x] Trait system and dynamic dispatch (`ColumnArray` trait)
+- [x] Generic traits with type parameters (`ChunkAgg<T>`)
+- [x] Multiple trait implementations per type (e.g., `ChunkAgg<i64>` and `ChunkAgg<f64>` for `IntegerColumn`)
 - [x] Enums with data (`CellValue`, `Dtype`)
 - [ ] Memory-efficient data processing
 - [ ] Performance optimization techniques

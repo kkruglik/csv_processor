@@ -39,9 +39,10 @@ User Input → Config → Dataset → AnalysisResult → Formatted Output
 - `dataframe/` - Core data structures and CSV loading
   - `mod.rs` - `DataFrame` struct with headers, rows, and typed columns
   - `loader.rs` - CSV file loading with `load_dataframe()` function
-  - `columns.rs` - Typed column arrays with `ColumnArray` trait
+  - `columns.rs` - Typed column arrays with `ColumnArray` trait and column implementations
+  - `aggregation.rs` - `ChunkAgg` trait for column-level statistical operations
 - `types.rs` - Core types (`CellValue`, `CsvError`, `Dtype`)
-- `analyzer.rs` - Analysis functions (missing values, statistics)
+- `analyzer.rs` - High-level analysis functions that orchestrate column aggregations
 - `parser.rs` - CSV parsing utilities
 - `reporter.rs` - Output formatting
 
@@ -49,7 +50,32 @@ User Input → Config → Dataset → AnalysisResult → Formatted Output
 - `Config` - Holds command and filename from CLI args
 - `DataFrame` - Main data container with headers, rows, metadata, and typed columns
 - `ColumnArray` trait - Polymorphic column storage for different data types
+- `ChunkAgg<T>` trait - Defines statistical operations (sum, min, max, mean) for column types
+- Concrete column types: `IntegerColumn`, `FloatColumn`, `StringColumn`, `BooleanColumn`
 - Custom error types: `ConfigError`, `CsvError`
 
+### Analysis Architecture
+
+The analyzer follows a trait-based aggregation pattern:
+
+1. **Column-Level Operations**: `ChunkAgg<T>` trait provides statistical operations directly on typed columns
+2. **Type-Specific Implementations**: Each column type (`IntegerColumn`, `FloatColumn`, etc.) implements aggregations appropriate for its data type
+3. **Analyzer Orchestration**: `analyzer.rs` coordinates column-level aggregations into dataset-wide analysis
+4. **Functional Design**: Pure functions that transform column data rather than mutating state
+
+Example flow:
+```rust
+// Column-level aggregation
+let mean_value = integer_column.mean(); // ChunkAgg trait method
+
+// Analyzer orchestrates multiple columns
+let analysis = analyze_statistics(&dataframe); // Uses ChunkAgg implementations
+```
+
 ### Current Implementation Status
-The project is partially implemented with foundation and data loading mostly complete. Analysis and reporting modules are in early stages. See `todo.md` for development roadmap.
+- **Foundation & Data Loading**: Complete with typed column system
+- **Column Aggregations**: Basic statistical operations implemented for `IntegerColumn`
+- **Analysis Orchestration**: In progress - transitioning to trait-based approach
+- **Reporting**: Early stages
+
+See `todo.md` for development roadmap.
