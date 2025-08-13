@@ -1,4 +1,5 @@
-use crate::{CellValue, Dtype};
+use super::ChunkAgg;
+use crate::{CellValue, CsvError, Dtype};
 
 pub trait ColumnArray: std::fmt::Debug {
     fn len(&self) -> usize;
@@ -12,7 +13,7 @@ pub trait ColumnArray: std::fmt::Debug {
 }
 
 #[derive(Debug)]
-struct IntegerColumn(Vec<Option<i64>>);
+pub struct IntegerColumn(pub Vec<Option<i64>>);
 
 #[derive(Debug)]
 struct FloatColumn(Vec<Option<f64>>);
@@ -108,6 +109,33 @@ impl ColumnArray for BooleanColumn {
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
+    }
+}
+
+impl ChunkAgg<i64> for IntegerColumn {
+    fn sum(&self) -> Option<i64> {
+        Some(self.0.iter().filter_map(|&x| x).sum())
+    }
+
+    fn max(&self) -> Option<i64> {
+        self.0.iter().filter_map(|&x| x).max()
+    }
+
+    fn min(&self) -> Option<i64> {
+        self.0.iter().filter_map(|&x| x).min()
+    }
+}
+
+impl ChunkAgg<f64> for IntegerColumn {
+    fn mean(&self) -> Option<f64> {
+        let array_len = self.non_null_count();
+        if array_len == 0 {
+            return Some(0.0);
+        }
+
+        let sum: i64 = self.0.iter().filter_map(|&x| x).sum();
+
+        Some(sum as f64 / array_len as f64)
     }
 }
 

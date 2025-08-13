@@ -1,4 +1,4 @@
-use csv_processor::{Command, load_dataframe, parse_config};
+use csv_processor::{Command, calculate_mean, load_dataframe, parse_config};
 use std::{env, process};
 
 fn main() {
@@ -25,4 +25,6 @@ fn main() {
     println!("{:?}", dataframe);
     println!("{:?}", dataframe.rows());
     println!("{:?}", dataframe.columns());
+
+    let dummy = calculate_mean(dataframe.get_column(0).unwrap().as_ref());
 }

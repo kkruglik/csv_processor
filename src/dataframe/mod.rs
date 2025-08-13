@@ -1,7 +1,9 @@
+pub mod aggregation;
 pub mod columns;
 pub mod loader;
 
-pub use columns::{ColumnArray, parse_column};
+pub use aggregation::ChunkAgg;
+pub use columns::{ColumnArray, IntegerColumn, parse_column};
 pub use loader::load_dataframe;
 
 #[derive(Debug)]
