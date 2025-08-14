@@ -1,4 +1,4 @@
-use csv_processor::{Command, calculate_mean, load_dataframe, parse_config};
+use csv_processor::{Command, load_dataframe, parse_config};
 use std::{env, process};
 
 fn main() {
