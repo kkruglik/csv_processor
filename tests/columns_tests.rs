@@ -1,4 +1,4 @@
-use csv_processor::dataframe::*;
+use csv_processor::series::*;
 
 #[test]
 fn test_sum_int() {

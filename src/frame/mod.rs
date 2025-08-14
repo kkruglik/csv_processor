@@ -1,10 +1,7 @@
-pub mod columns;
-pub mod loader;
+pub mod io;
 
-pub use columns::{
-    BooleanColumn, ColumnArray, FloatColumn, IntegerColumn, StringColumn, parse_column,
-};
-pub use loader::load_dataframe;
+use crate::series::{ColumnArray, parse_column};
+pub use io::load_dataframe;
 
 #[derive(Debug)]
 pub struct DataFrame {

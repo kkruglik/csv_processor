@@ -36,12 +36,15 @@ User Input → Config → DataFrame (self-analyzing columns) → Formatted Outpu
 
 ### Module Structure
 - `config.rs` - CLI parsing and user configuration with `Command` enum (CheckNAs, CalculateStatistics)
-- `dataframe/` - Core data structures and CSV loading
+- `series/` - Column-oriented data structures (following Polars patterns)
+  - `array.rs` - `ColumnArray` trait with statistical operations, type inference, and parsing
+  - `mod.rs` - Re-exports for series functionality
+- `frame/` - DataFrame operations and I/O
   - `mod.rs` - `DataFrame` struct with headers, rows, metadata, and typed columns
-  - `loader.rs` - CSV file loading with `load_dataframe()` function
-  - `columns.rs` - Unified `ColumnArray` trait with statistical operations and column implementations
-- `types.rs` - Core types (`CellValue`, `CsvError`, `Dtype`)
-- `parser.rs` - CSV parsing utilities
+  - `io.rs` - CSV file loading with `load_dataframe()` function
+- `scalar/` - Cell-level operations and values
+  - `mod.rs` - `CellValue` enum and scalar operations
+- `types.rs` - Core types (`CsvError`, `Dtype`)
 - `reporter.rs` - Output formatting
 
 **Check these documents and update them when you finish working on a feature:**
@@ -52,6 +55,7 @@ User Input → Config → DataFrame (self-analyzing columns) → Formatted Outpu
 - `Config` - Holds command and filename from CLI args
 - `DataFrame` - Main data container with headers, rows, metadata, and typed columns
 - `ColumnArray` trait - Unified interface for polymorphic column storage AND statistical operations
+- `CellValue` - Enum for individual cell values with type information
 - Concrete column types: `IntegerColumn`, `FloatColumn`, `StringColumn`, `BooleanColumn`
 - Custom error types: `ConfigError`, `CsvError`
 
@@ -89,4 +93,5 @@ for (i, column) in dataframe.columns().iter().enumerate() {
   - NaN filtering for float operations
 - **API Design**: Complete - ergonomic trait object interface
 - **Analysis Architecture**: Complete - embedded in column trait system (no separate analyzer needed)
+- **Module Architecture**: Complete - reorganized to follow industry patterns (Polars/Arrow style)
 - **Reporting**: Early stages
