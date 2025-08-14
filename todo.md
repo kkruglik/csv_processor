@@ -16,6 +16,7 @@
   - [x] Typed columns: `IntegerColumn`, `FloatColumn`, `StringColumn`, `BooleanColumn`
   - [x] Automatic type inference and parsing
 - [x] Basic data validation and null handling
+- [x] Unit tests for column operations (columns_tests.rs created)
 - [ ] Unit tests for CSV loading (parser_tests.rs commented out - needs updating)
 
 ## Phase 3: NA Analysis 🔄 (Trait-Based Approach)
@@ -33,23 +34,29 @@
 - [ ] Table output formatting
 - [ ] CLI integration and testing
 
-## Phase 5: Statistics Analysis 🔄 (Trait-Based Approach)
-- [x] Create `ChunkAgg<T>` trait for column-level aggregations (`dataframe/aggregation.rs`)
-- [x] Implement basic statistical operations for `IntegerColumn`:
-  - [x] `sum()`, `min()`, `max()`, `mean()` methods
-- [ ] Extend aggregation implementations:
-  - [ ] Complete `FloatColumn` aggregations (sum, min, max, mean, std, variance)
-  - [ ] Add `StringColumn` aggregations (count, mode, unique values)
-  - [ ] Add `BooleanColumn` aggregations (count true/false, percentage)
-- [ ] Add advanced statistical operations:
-  - [ ] `median()`, `mode()`, `variance()` methods to `ChunkAgg` trait
-  - [ ] Implement for all relevant column types
-- [ ] Update `analyzer.rs` to orchestrate column aggregations:
-  - [ ] `analyze_statistics()` function using trait methods
-  - [ ] Remove old individual calculation functions
+## Phase 5: Statistics Analysis ✅ (Unified ColumnArray Approach)
+- [x] **ARCHITECTURAL SHIFT**: Consolidated statistical operations into `ColumnArray` trait
+- [x] Removed separate `ChunkAgg<T>` trait in favor of unified interface
+- [x] Implement comprehensive statistical operations:
+  - [x] `IntegerColumn`: `sum()`, `min()`, `max()`, `mean()` with proper null handling
+  - [x] `FloatColumn`: `sum()`, `min()`, `max()`, `mean()` with NaN filtering
+  - [x] `BooleanColumn`: `sum()` (count true), `min()`/`max()` (0.0/1.0 logic)
+  - [x] `StringColumn`: Statistical operations return `None` (appropriate fallback)
+- [x] Standardized return type: All statistical operations return `Option<f64>`
+- [x] Enhanced API ergonomics: Direct method calls on trait objects
+- [x] Made all column types publicly accessible
+- [x] **ARCHITECTURE DECISION**: No separate analyzer module needed
+  - [x] Analysis is embedded directly in `ColumnArray` trait methods
+  - [x] Each column type implements its own statistical operations
+  - [x] DataFrame-level analysis is simple iteration over self-analyzing columns
+- [ ] Add advanced statistical operations (median, mode, variance)
 - [ ] Add statistics to result formatting
 
-## Phase 6: Polish & Performance 📋
+## Phase 6: Memory Optimization & Performance 📋
+- [ ] **Memory Optimization**: Remove duplicate `rows` storage from `DataFrame`
+  - [ ] Keep only parsed `columns: Vec<Box<dyn ColumnArray>>`
+  - [ ] Implement `get_row()` reconstruction from columns when needed
+  - [ ] Update `DataFrame::new()` to not store raw rows
 - [ ] Error message improvements
 - [ ] Performance optimization for large files
 - [ ] Better CLI help and usage
@@ -71,8 +78,9 @@
 - [x] Testing patterns in Rust
 - [x] Working with external crates (`csv`)
 - [x] Trait system and dynamic dispatch (`ColumnArray` trait)
-- [x] Generic traits with type parameters (`ChunkAgg<T>`)
-- [x] Multiple trait implementations per type (e.g., `ChunkAgg<i64>` and `ChunkAgg<f64>` for `IntegerColumn`)
+- [x] Unified trait design with `ColumnArray` combining data access and operations
+- [x] Trait object ergonomics and polymorphic method calls
+- [x] API design decisions: type safety vs usability trade-offs
 - [x] Enums with data (`CellValue`, `Dtype`)
 - [ ] Memory-efficient data processing
 - [ ] Performance optimization techniques
@@ -89,5 +97,7 @@
 ## Success Criteria
 - Tool processes CSV files faster than equivalent Python scripts
 - Clean, maintainable code following Rust idioms
+- **✅ Achieved**: Ergonomic API design following industry patterns (Polars/Arrow)
+- **✅ Achieved**: Unified trait interface enabling polymorphic operations
 - Comprehensive test coverage
 - Helpful error messages and user experience

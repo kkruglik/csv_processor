@@ -25,57 +25,68 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Design Principles
 - **Functional design**: Data structures + pure functions over object-oriented patterns
-- **Single responsibility**: Each module handles one concern  
+- **Single responsibility**: Each module handles one concern
 - **Immutable data flow**: Transform data rather than mutate state
 - **Rust idioms**: Leverage ownership system and error handling
 
 ### Data Flow
 ```
-User Input → Config → Dataset → AnalysisResult → Formatted Output
+User Input → Config → DataFrame (self-analyzing columns) → Formatted Output
 ```
 
 ### Module Structure
 - `config.rs` - CLI parsing and user configuration with `Command` enum (CheckNAs, CalculateStatistics)
 - `dataframe/` - Core data structures and CSV loading
-  - `mod.rs` - `DataFrame` struct with headers, rows, and typed columns
+  - `mod.rs` - `DataFrame` struct with headers, rows, metadata, and typed columns
   - `loader.rs` - CSV file loading with `load_dataframe()` function
-  - `columns.rs` - Typed column arrays with `ColumnArray` trait and column implementations
-  - `aggregation.rs` - `ChunkAgg` trait for column-level statistical operations
+  - `columns.rs` - Unified `ColumnArray` trait with statistical operations and column implementations
 - `types.rs` - Core types (`CellValue`, `CsvError`, `Dtype`)
-- `analyzer.rs` - High-level analysis functions that orchestrate column aggregations
 - `parser.rs` - CSV parsing utilities
 - `reporter.rs` - Output formatting
+
+**Check these documents and update them when you finish working on a feature:**
+@app_design.md - Application Design and main principles we need to achive in development
+@todo.md - Current tasks,  progress and development roadmap
 
 ### Key Data Structures
 - `Config` - Holds command and filename from CLI args
 - `DataFrame` - Main data container with headers, rows, metadata, and typed columns
-- `ColumnArray` trait - Polymorphic column storage for different data types
-- `ChunkAgg<T>` trait - Defines statistical operations (sum, min, max, mean) for column types
+- `ColumnArray` trait - Unified interface for polymorphic column storage AND statistical operations
 - Concrete column types: `IntegerColumn`, `FloatColumn`, `StringColumn`, `BooleanColumn`
 - Custom error types: `ConfigError`, `CsvError`
 
 ### Analysis Architecture
 
-The analyzer follows a trait-based aggregation pattern:
+Analysis is now **embedded directly in the column system** - no separate analyzer needed:
 
-1. **Column-Level Operations**: `ChunkAgg<T>` trait provides statistical operations directly on typed columns
-2. **Type-Specific Implementations**: Each column type (`IntegerColumn`, `FloatColumn`, etc.) implements aggregations appropriate for its data type
-3. **Analyzer Orchestration**: `analyzer.rs` coordinates column-level aggregations into dataset-wide analysis
-4. **Functional Design**: Pure functions that transform column data rather than mutating state
+1. **Self-Analyzing Columns**: Each column type implements its own statistical operations
+2. **Unified Interface**: `ColumnArray` trait provides both data access AND complete analysis
+3. **Polymorphic Operations**: All statistical methods return `Option<f64>` for consistency
+4. **Type-Specific Logic**: Each column type implements operations appropriate for its data type
+5. **Ergonomic API**: Direct method calls on trait objects without complex downcasting
+6. **No Orchestration Layer**: Analysis happens at the column level, aggregated at DataFrame level
 
 Example flow:
 ```rust
-// Column-level aggregation
-let mean_value = integer_column.mean(); // ChunkAgg trait method
+// Direct statistical operations on any column type
+let column: &dyn ColumnArray = dataframe.get_column(0).unwrap();
+let mean_value = column.mean();    // Column analyzes itself
+let sum_value = column.sum();      // No external analyzer needed
+let null_count = column.null_count(); // Built into the column
 
-// Analyzer orchestrates multiple columns
-let analysis = analyze_statistics(&dataframe); // Uses ChunkAgg implementations
+// DataFrame-level analysis is just iteration over self-analyzing columns
+for (i, column) in dataframe.columns().iter().enumerate() {
+    println!("Column {}: mean={:?}, nulls={}", i, column.mean(), column.null_count());
+}
 ```
 
 ### Current Implementation Status
 - **Foundation & Data Loading**: Complete with typed column system
-- **Column Aggregations**: Basic statistical operations implemented for `IntegerColumn`
-- **Analysis Orchestration**: In progress - transitioning to trait-based approach
+- **Column System**: Complete with unified `ColumnArray` trait
+- **Statistical Operations**: Complete for `IntegerColumn`, `FloatColumn`, and `BooleanColumn`
+  - All types implement: `sum()`, `min()`, `max()`, `mean()` returning `Option<f64>`
+  - Proper null handling and edge case management
+  - NaN filtering for float operations
+- **API Design**: Complete - ergonomic trait object interface
+- **Analysis Architecture**: Complete - embedded in column trait system (no separate analyzer needed)
 - **Reporting**: Early stages
-
-See `todo.md` for development roadmap.
