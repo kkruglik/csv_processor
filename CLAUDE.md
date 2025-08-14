@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `cargo test` - Run all tests
 - `cargo test <test_name>` - Run specific test
 - `cargo test config_tests` - Run configuration tests
-- `cargo test parser_tests` - Run parser tests
+- `cargo test columns_tests` - Run series/array statistical operation tests
 
 ### Development
 - `cargo check` - Check code without building
