@@ -1,5 +1,4 @@
-use super::ChunkAgg;
-use crate::{CellValue, CsvError, Dtype};
+use crate::{CellValue, Dtype};
 
 pub trait ColumnArray: std::fmt::Debug {
     fn len(&self) -> usize;
@@ -10,19 +9,32 @@ pub trait ColumnArray: std::fmt::Debug {
         self.len() - self.null_count()
     }
     fn as_any(&self) -> &dyn std::any::Any;
+
+    fn mean(&self) -> Option<f64> {
+        None
+    }
+    fn sum(&self) -> Option<f64> {
+        None
+    }
+    fn min(&self) -> Option<f64> {
+        None
+    }
+    fn max(&self) -> Option<f64> {
+        None
+    }
 }
 
 #[derive(Debug)]
 pub struct IntegerColumn(pub Vec<Option<i64>>);
 
 #[derive(Debug)]
-struct FloatColumn(Vec<Option<f64>>);
+pub struct FloatColumn(pub Vec<Option<f64>>);
 
 #[derive(Debug)]
-struct StringColumn(Vec<Option<String>>);
+pub struct StringColumn(pub Vec<Option<String>>);
 
 #[derive(Debug)]
-struct BooleanColumn(Vec<Option<bool>>);
+pub struct BooleanColumn(pub Vec<Option<bool>>);
 
 impl ColumnArray for IntegerColumn {
     fn dtype(&self) -> Dtype {
@@ -43,6 +55,28 @@ impl ColumnArray for IntegerColumn {
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
+    }
+
+    fn sum(&self) -> Option<f64> {
+        let sum: i64 = self.0.iter().filter_map(|&x| x).sum();
+        Some(sum as f64)
+    }
+
+    fn max(&self) -> Option<f64> {
+        self.0.iter().filter_map(|&x| x).max().map(|x| x as f64)
+    }
+
+    fn min(&self) -> Option<f64> {
+        self.0.iter().filter_map(|&x| x).min().map(|x| x as f64)
+    }
+
+    fn mean(&self) -> Option<f64> {
+        let count = self.non_null_count();
+        if count == 0 {
+            return None;
+        }
+        let sum: i64 = self.0.iter().filter_map(|&x| x).sum();
+        Some(sum as f64 / count as f64)
     }
 }
 
@@ -65,6 +99,42 @@ impl ColumnArray for FloatColumn {
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
+    }
+
+    fn sum(&self) -> Option<f64> {
+        Some(self.0.iter().filter_map(|&x| x).sum())
+    }
+
+    fn max(&self) -> Option<f64> {
+        self.0
+            .iter()
+            .filter_map(|&x| x) // Remove None
+            .filter(|x| !x.is_nan()) // Remove NaN
+            .max_by(|a, b| a.partial_cmp(b).unwrap()) // Safe to unwrap now
+    }
+
+    fn min(&self) -> Option<f64> {
+        self.0
+            .iter()
+            .filter_map(|&x| x)
+            .filter(|x| !x.is_nan())
+            .min_by(|a, b| a.partial_cmp(b).unwrap())
+    }
+
+    fn mean(&self) -> Option<f64> {
+        let valid_values: Vec<f64> = self
+            .0
+            .iter()
+            .filter_map(|&x| x)
+            .filter(|x| !x.is_nan())
+            .collect();
+
+        if valid_values.is_empty() {
+            return Some(0.0);
+        }
+
+        let sum: f64 = valid_values.iter().sum();
+        Some(sum / valid_values.len() as f64)
     }
 }
 
@@ -110,32 +180,25 @@ impl ColumnArray for BooleanColumn {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-}
 
-impl ChunkAgg<i64> for IntegerColumn {
-    fn sum(&self) -> Option<i64> {
-        Some(self.0.iter().filter_map(|&x| x).sum())
+    fn sum(&self) -> Option<f64> {
+        Some(self.0.iter().filter_map(|&x| x).filter(|&x| x).count() as f64)
     }
 
-    fn max(&self) -> Option<i64> {
-        self.0.iter().filter_map(|&x| x).max()
-    }
-
-    fn min(&self) -> Option<i64> {
-        self.0.iter().filter_map(|&x| x).min()
-    }
-}
-
-impl ChunkAgg<f64> for IntegerColumn {
-    fn mean(&self) -> Option<f64> {
-        let array_len = self.non_null_count();
-        if array_len == 0 {
+    fn min(&self) -> Option<f64> {
+        if self.non_null_count() == 0 {
             return Some(0.0);
         }
+        let has_false = self.0.iter().any(|&x| x == Some(false));
+        Some(if has_false { 0.0 } else { 1.0 })
+    }
 
-        let sum: i64 = self.0.iter().filter_map(|&x| x).sum();
-
-        Some(sum as f64 / array_len as f64)
+    fn max(&self) -> Option<f64> {
+        if self.non_null_count() == 0 {
+            return Some(0.0);
+        }
+        let has_true = self.0.iter().any(|&x| x == Some(true));
+        Some(if has_true { 1.0 } else { 0.0 })
     }
 }
 

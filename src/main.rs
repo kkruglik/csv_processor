@@ -26,5 +26,12 @@ fn main() {
     println!("{:?}", dataframe.rows());
     println!("{:?}", dataframe.columns());
 
-    let dummy = calculate_mean(dataframe.get_column(0).unwrap().as_ref());
+    println!(
+        "Len of column 0: {}",
+        dataframe.get_column(0).unwrap().len()
+    );
+    print!(
+        "Mean of column 0: {:?}",
+        dataframe.get_column(0).unwrap().mean()
+    )
 }
