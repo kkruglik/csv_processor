@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `cargo test <test_name>` - Run specific test
 - `cargo test config_tests` - Run configuration tests
 - `cargo test columns_tests` - Run series/array statistical operation tests
+- `cargo test frame_tests` - Run DataFrame functionality tests
 
 ### Development
 - `cargo check` - Check code without building
@@ -40,12 +41,12 @@ User Input → Config → DataFrame (self-analyzing columns) → Formatted Outpu
   - `array.rs` - `ColumnArray` trait with statistical operations, type inference, and parsing
   - `mod.rs` - Re-exports for series functionality
 - `frame/` - DataFrame operations and I/O
-  - `mod.rs` - `DataFrame` struct with headers, rows, metadata, and typed columns
+  - `mod.rs` - `DataFrame` struct with Display trait, shape methods, and typed columns
   - `io.rs` - CSV file loading with `load_dataframe()` function
 - `scalar/` - Cell-level operations and values
   - `mod.rs` - `CellValue` enum and scalar operations
 - `types.rs` - Core types (`CsvError`, `Dtype`)
-- `reporter.rs` - Output formatting
+- `reporter.rs` - Statistical report generation (wide and long formats)
 
 **Check these documents and update them when you finish working on a feature:**
 @app_design.md - Application Design and main principles we need to achive in development
@@ -53,9 +54,9 @@ User Input → Config → DataFrame (self-analyzing columns) → Formatted Outpu
 
 ### Key Data Structures
 - `Config` - Holds command and filename from CLI args
-- `DataFrame` - Main data container with headers, rows, metadata, and typed columns
+- `DataFrame` - Main data container with optional headers/rows, typed columns, and Display formatting
 - `ColumnArray` trait - Unified interface for polymorphic column storage AND statistical operations
-- `CellValue` - Enum for individual cell values with type information
+- `CellValue` - Enum for individual cell values with type information and utility methods
 - Concrete column types: `IntegerColumn`, `FloatColumn`, `StringColumn`, `BooleanColumn`
 - Custom error types: `ConfigError`, `CsvError`
 
@@ -87,11 +88,37 @@ for (i, column) in dataframe.columns().iter().enumerate() {
 ### Current Implementation Status
 - **Foundation & Data Loading**: Complete with typed column system
 - **Column System**: Complete with unified `ColumnArray` trait
-- **Statistical Operations**: Complete for `IntegerColumn`, `FloatColumn`, and `BooleanColumn`
+- **Statistical Operations**: Complete for all column types (`IntegerColumn`, `FloatColumn`, `StringColumn`, `BooleanColumn`)
   - All types implement: `sum()`, `min()`, `max()`, `mean()` returning `Option<f64>`
   - Proper null handling and edge case management
   - NaN filtering for float operations
 - **API Design**: Complete - ergonomic trait object interface
 - **Analysis Architecture**: Complete - embedded in column trait system (no separate analyzer needed)
 - **Module Architecture**: Complete - reorganized to follow industry patterns (Polars/Arrow style)
-- **Reporting**: Early stages
+- **DataFrame Display**: Complete with formatted table output and proper truncation
+- **Statistical Reporting**: Complete with wide and long format report generation
+- **Testing**: Complete with comprehensive test suites for config, columns, and DataFrame functionality
+
+## Next Steps (Current Priority)
+
+### **🔥 High Priority Tasks**
+1. **CLI Integration** (`main.rs:23-28`):
+   - Wire `check_na` command to NA analysis functionality
+   - Wire `calculate_statistics` command to statistical reporting system
+   - Remove debugging code and implement proper command routing
+
+2. **NA Analysis Implementation**:
+   - Create `analyze_nans()` function using existing `null_count()` infrastructure
+   - Calculate NA percentages per column
+   - Integrate with reporting system
+
+3. **Memory Optimization**:
+   - Remove duplicate `rows` storage from DataFrame
+   - Keep only parsed `columns: Vec<Box<dyn ColumnArray>>`
+
+### **📋 Medium Priority Tasks**
+- Advanced statistical operations (median, mode, variance)
+- Better error handling and user experience
+- CLI help system improvements
+
+**Note**: The sophisticated statistical engine and architecture are complete. Remaining work is primarily integration and optimization.

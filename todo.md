@@ -7,32 +7,29 @@
 - [x] Basic test framework
 - [x] Module structure planning
 
-## Phase 2: Data Loading ✅ (Mostly Complete)
-- [x] Create `DataFrame` struct (`dataframe/mod.rs`) 
-- [x] Implement CSV file reading with `csv` crate (`dataframe/loader.rs`)
+## Phase 2: Data Loading ✅ (Complete)
+- [x] Create `DataFrame` struct (`frame/mod.rs`) 
+- [x] Implement CSV file reading with `csv` crate (`frame/io.rs`)
 - [x] Add CSV parsing error handling (`types.rs` - `CsvError`)
-- [x] Implement typed column system (`dataframe/columns.rs`)
+- [x] Implement typed column system (`series/array.rs`)
   - [x] `ColumnArray` trait for polymorphic columns
   - [x] Typed columns: `IntegerColumn`, `FloatColumn`, `StringColumn`, `BooleanColumn`
   - [x] Automatic type inference and parsing
 - [x] Basic data validation and null handling
-- [x] Unit tests for column operations (columns_tests.rs created)
-- [ ] Unit tests for CSV loading (needs implementation in loader module)
+- [x] Unit tests for column operations (`tests/columns_tests.rs`)
+- [x] Unit tests for DataFrame functionality (`tests/frame_tests.rs`)
 
-## Phase 3: NA Analysis 🔄 (Trait-Based Approach)
-- [x] `ColumnArray` trait provides `null_count()` method for missing value analysis
-- [ ] Implement `analyze_nans()` function using trait methods:
-  - [ ] Use `ColumnArray.null_count()` for missing value counts
-  - [ ] Calculate NA percentages per column using `len()` and `null_count()`
-  - [ ] Return structured analysis results
-- [ ] Integration tests with sample data
-- [ ] Wire up analysis to main CLI flow
+## Phase 3: NA Analysis 🔄 → **MOVED TO CURRENT PRIORITY (Phase 6B)**
+*This phase has been reorganized into current priority Phase 6B above*
 
-## Phase 4: Output Formatting 🔜
-- [ ] Create basic reporter (`reporter.rs`)
-- [ ] Format NA analysis results
-- [ ] Table output formatting
-- [ ] CLI integration and testing
+## Phase 4: Output Formatting ✅ (Complete)
+- [x] Create statistical reporter (`reporter.rs`)
+- [x] Implement DataFrame Display trait with formatted table output
+- [x] Add wide format statistical reports
+- [x] Add long format statistical reports
+- [x] Implement proper column width handling and truncation
+- [ ] Format NA analysis results → **MOVED TO PHASE 6B**
+- [ ] CLI integration and testing → **MOVED TO PHASE 6A**
 
 ## Phase 5: Statistics Analysis ✅ (Unified ColumnArray Approach)
 - [x] **ARCHITECTURAL SHIFT**: Consolidated statistical operations into `ColumnArray` trait
@@ -49,8 +46,26 @@
   - [x] Analysis is embedded directly in `ColumnArray` trait methods
   - [x] Each column type implements its own statistical operations
   - [x] DataFrame-level analysis is simple iteration over self-analyzing columns
+- [x] Add statistics to result formatting (wide and long report formats implemented)
 - [ ] Add advanced statistical operations (median, mode, variance)
-- [ ] Add statistics to result formatting
+
+## **CURRENT PRIORITY PHASES** 🎯
+
+### **Phase 6A: CLI Integration** 🔥 (High Priority)
+- [ ] Wire `check_na` command to NA analysis functionality
+- [ ] Wire `calculate_statistics` command to statistical reporting system
+- [ ] Remove debugging code from `main.rs` and implement proper command routing
+- [ ] Add proper error handling for CLI command execution
+- [ ] Test end-to-end functionality with sample CSV files
+
+### **Phase 6B: NA Analysis Implementation** 🔥 (High Priority)  
+- [x] `ColumnArray` trait provides `null_count()` method for missing value analysis
+- [ ] Implement `analyze_nans()` function using trait methods:
+  - [ ] Use `ColumnArray.null_count()` for missing value counts
+  - [ ] Calculate NA percentages per column using `len()` and `null_count()`
+  - [ ] Return structured analysis results compatible with reporting system
+- [ ] Integration tests with sample data containing missing values
+- [ ] Format NA analysis results in reporter module
 
 ## Phase 6: Memory Optimization & Performance 📋
 - [ ] **Memory Optimization**: Remove duplicate `rows` storage from `DataFrame`
@@ -63,12 +78,19 @@
 - [ ] Documentation improvements
 - [ ] Edge case handling
 
-## Phase 7: Advanced Features (Future) 📋
+## Phase 7: Advanced Statistics 📋 (Medium Priority)
+- [ ] Add advanced statistical operations (median, mode, variance)
+- [ ] Implement percentile calculations
+- [ ] Add correlation analysis between columns
+- [ ] Statistical significance testing
+
+## Phase 8: Enhanced Features 📋 (Low Priority)
 - [ ] Multiple output formats (JSON, CSV)
-- [ ] Data type inference
-- [ ] Column filtering options
+- [ ] Column filtering options  
 - [ ] Streaming for very large files
 - [ ] Configuration file support
+- [ ] Better CLI help and usage documentation
+- [ ] Enhanced error messages with suggestions
 
 ## Learning Goals
 
@@ -85,6 +107,7 @@
 - [x] Module reorganization following industry patterns (Polars/Arrow)
 - [x] Separation of concerns: series, frame, and scalar modules
 - [x] Enums with data (`CellValue`, `Dtype`)
+- [x] Display trait implementation for formatted output
 - [ ] Memory-efficient data processing
 - [ ] Performance optimization techniques
 
@@ -125,5 +148,9 @@
 - **✅ Achieved**: Ergonomic API design following industry patterns (Polars/Arrow)
 - **✅ Achieved**: Unified trait interface enabling polymorphic operations
 - **✅ Achieved**: Professional module organization following industry standards
-- Comprehensive test coverage
-- Helpful error messages and user experience
+- **✅ Achieved**: Formatted output with DataFrame Display trait
+- **✅ Achieved**: Statistical reporting in multiple formats (wide/long)
+- **✅ Achieved**: Comprehensive test coverage for core functionality
+- [ ] Complete NA analysis functionality
+- [ ] Helpful error messages and user experience
+- [ ] Memory optimization (remove duplicate row storage)
