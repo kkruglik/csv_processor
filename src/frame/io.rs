@@ -1,12 +1,9 @@
 use super::DataFrame;
 use crate::{Config, CsvError};
 use csv::Reader;
-use std::fs;
 
 pub fn load_dataframe(config: &Config) -> Result<DataFrame, CsvError> {
     let mut reader = Reader::from_path(config.filename())?;
-    let file_metadata = fs::metadata(config.filename())?;
-    let file_size = file_metadata.len() as usize;
 
     println!("Successfuly loaded csv from {}", config.filename());
 
@@ -20,5 +17,5 @@ pub fn load_dataframe(config: &Config) -> Result<DataFrame, CsvError> {
         rows.push(row);
     }
 
-    Ok(DataFrame::new(headers, rows, file_size))
+    Ok(DataFrame::new(Some(headers), Some(rows)))
 }

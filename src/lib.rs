@@ -1,5 +1,6 @@
 pub mod config;
 pub mod frame;
+pub mod reporter;
 pub mod scalar;
 pub mod series;
 pub mod types;
