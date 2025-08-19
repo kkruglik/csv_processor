@@ -17,7 +17,7 @@ impl CellValue {
         match self {
             CellValue::Str(_) => "string",
             CellValue::Float(_) => "float",
-            CellValue::Integer(_) => "integer", 
+            CellValue::Integer(_) => "integer",
             CellValue::Boolean(_) => "boolean",
             CellValue::Date(_) => "date",
             CellValue::Null => "null",

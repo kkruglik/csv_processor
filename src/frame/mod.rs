@@ -1,71 +1,177 @@
-pub mod io;
-
 use crate::series::{ColumnArray, parse_column};
-pub use io::load_dataframe;
+use csv::Reader;
+use std::error::Error;
 use std::fmt;
 
 #[derive(Debug)]
 pub struct DataFrame {
     headers: Option<Vec<String>>,
-    rows: Option<Vec<Vec<String>>>,
     columns: Vec<Box<dyn ColumnArray>>,
 }
 
 impl DataFrame {
-    pub fn new(headers: Option<Vec<String>>, rows: Option<Vec<Vec<String>>>) -> Self {
-        if let Some(rows) = &rows
-            && let Some(headers) = &headers
-        {
-            if headers.len() != rows[0].len() {
-                panic!(
-                    "Headers and columns have different size: headers={}, columns={}",
-                    headers.len(),
-                    rows[0].len()
-                );
+    pub fn new<C>(headers: Option<Vec<String>>, columns: Vec<C>) -> Self
+    where
+        C: Into<Box<dyn ColumnArray>>,
+    {
+        let columns: Vec<Box<dyn ColumnArray>> =
+            columns.into_iter().map(|col| col.into()).collect();
+
+        let headers = headers.unwrap_or_default();
+
+        if !headers.is_empty() && !columns.is_empty() && headers.len() != columns.len() {
+            panic!(
+                "Headers and columns have different size: headers={}, columns={}",
+                headers.len(),
+                columns.len()
+            );
+        }
+
+        // Validate all columns have same length
+        if let Some(expected_len) = columns.first().map(|col| col.len()) {
+            for (i, col) in columns.iter().enumerate() {
+                if col.len() != expected_len {
+                    let header_name = headers.get(i).map(|s| s.as_str()).unwrap_or("unknown");
+                    panic!(
+                        "Column '{}' has length {} but expected {}",
+                        header_name,
+                        col.len(),
+                        expected_len
+                    );
+                }
             }
         }
 
-        let cols_count = match (&headers, &rows) {
-            (Some(h), _) => h.len(),
-            (None, Some(r)) if !r.is_empty() => r[0].len(),
-            _ => 0,
-        };
-
-        let columns: Vec<Box<dyn ColumnArray>> = {
-            match &rows {
-                Some(rows) if !rows.is_empty() => {
-                    let mut result = Vec::new();
-                    for index in 0..cols_count {
-                        let raw_column = rows
-                            .iter()
-                            .map(|row| row.get(index).map(|s| s.as_str()).unwrap_or(""))
-                            .collect();
-                        result.push(parse_column(raw_column));
-                    }
-                    result
-                }
-                _ => Vec::new(),
-            }
-        };
-
         DataFrame {
-            headers,
-            rows,
+            headers: Some(headers),
             columns,
         }
     }
 
-    fn rows_count(&self) -> usize {
-        self.rows.as_ref().map_or(0, |r| r.len())
+    pub fn from_columns(headers: Option<Vec<String>>, columns: Vec<Box<dyn ColumnArray>>) -> Self {
+        let headers = headers.unwrap_or_default();
+
+        if !headers.is_empty() && !columns.is_empty() && headers.len() != columns.len() {
+            panic!(
+                "Headers and columns have different size: headers={}, columns={}",
+                headers.len(),
+                columns.len()
+            );
+        }
+
+        // Validate all columns have same length
+        if let Some(expected_len) = columns.first().map(|col| col.len()) {
+            for (i, col) in columns.iter().enumerate() {
+                if col.len() != expected_len {
+                    let header_name = headers.get(i).map(|s| s.as_str()).unwrap_or("unknown");
+                    panic!(
+                        "Column '{}' has length {} but expected {}",
+                        header_name,
+                        col.len(),
+                        expected_len
+                    );
+                }
+            }
+        }
+
+        DataFrame {
+            headers: Some(headers),
+            columns,
+        }
+    }
+
+    pub fn from_strings(headers: Option<Vec<String>>, raw_columns: Vec<Vec<String>>) -> Self {
+        // Convert raw string columns to properly typed columns using parse_column
+        let columns: Vec<Box<dyn ColumnArray>> = raw_columns
+            .into_iter()
+            .map(|col| {
+                let str_refs: Vec<&str> = col.iter().map(|s| s.as_str()).collect();
+                parse_column(str_refs)
+            })
+            .collect();
+
+        let headers = headers.unwrap_or_default();
+
+        if !headers.is_empty() && !columns.is_empty() && headers.len() != columns.len() {
+            panic!(
+                "Headers and columns have different size: headers={}, columns={}",
+                headers.len(),
+                columns.len()
+            );
+        }
+
+        DataFrame {
+            headers: Some(headers),
+            columns,
+        }
+    }
+
+    pub fn from_csv(filename: &str) -> Result<Self, Box<dyn Error>> {
+        let mut reader = Reader::from_path(filename)?;
+
+        let headers: Vec<String> = reader.headers()?.iter().map(|h| h.to_string()).collect();
+
+        let cols_count = headers.len();
+
+        let mut rows = Vec::new();
+        for result in reader.records() {
+            let record = result?;
+            let row: Vec<String> = record.iter().map(|r| r.to_string()).collect();
+
+            if row.len() != cols_count {
+                return Err(format!(
+                    "Row {} has {} columns but expected {} (headers: {})",
+                    rows.len() + 1,
+                    row.len(),
+                    cols_count,
+                    headers.join(", ")
+                )
+                .into());
+            }
+
+            rows.push(row);
+        }
+
+        // Convert rows to columns
+        let columns: Vec<Box<dyn ColumnArray>> = if !rows.is_empty() {
+            (0..cols_count)
+                .map(|col_index| {
+                    let raw_column: Vec<&str> = rows
+                        .iter()
+                        .map(|row| row.get(col_index).map(|s| s.as_str()).unwrap_or(""))
+                        .collect();
+                    parse_column(raw_column)
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
+
+        Ok(Self::new(Some(headers), columns))
+    }
+
+    pub fn empty() -> Self {
+        DataFrame {
+            headers: None,
+            columns: Vec::new(),
+        }
+    }
+
+    pub fn read_csv(filename: &str) -> Self {
+        Self::from_csv(filename).unwrap_or_else(|e| {
+            panic!("Failed to read CSV '{}': {}", filename, e);
+        })
     }
 
     fn columns_count(&self) -> usize {
-        let cols_count = match (&self.headers, &self.rows) {
-            (Some(h), _) => h.len(),
-            (None, Some(r)) if !r.is_empty() => r[0].len(),
-            _ => 0,
-        };
-        cols_count
+        self.columns.len()
+    }
+
+    fn rows_count(&self) -> usize {
+        if !self.columns.is_empty() {
+            return self.columns[0].len();
+        }
+        0
     }
 
     pub fn shape(&self) -> (usize, usize) {
@@ -76,20 +182,12 @@ impl DataFrame {
         self.headers.as_deref().unwrap_or(&[])
     }
 
-    pub fn rows(&self) -> &[Vec<String>] {
-        self.rows.as_deref().unwrap_or(&[])
-    }
-
     pub fn columns(&self) -> &[Box<dyn ColumnArray>] {
         &self.columns
     }
 
     pub fn get_column(&self, column_index: usize) -> Option<&Box<dyn ColumnArray>> {
         self.columns.get(column_index)
-    }
-
-    pub fn get_row(&self, row_index: usize) -> Option<&Vec<String>> {
-        self.rows().get(row_index)
     }
 }
 
@@ -130,7 +228,8 @@ impl fmt::Display for DataFrame {
                 }
             }
 
-            max_width = max_width.max(8).min(20);
+            // max_width = max_width.max(8).min(20);
+            max_width = max_width.clamp(8, 20);
             col_widths.push(max_width);
         }
 

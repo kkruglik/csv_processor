@@ -5,7 +5,6 @@ pub enum CsvError {
     FileNotFound(String),
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Dtype {
     Str,

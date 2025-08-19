@@ -22,6 +22,10 @@ pub trait ColumnArray: std::fmt::Debug {
     fn max(&self) -> Option<f64> {
         None
     }
+
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 #[derive(Debug)]
@@ -102,7 +106,13 @@ impl ColumnArray for FloatColumn {
     }
 
     fn sum(&self) -> Option<f64> {
-        Some(self.0.iter().filter_map(|&x| x).sum())
+        Some(
+            self.0
+                .iter()
+                .filter_map(|&x| x)
+                .filter(|x| !x.is_nan())
+                .sum(),
+        )
     }
 
     fn max(&self) -> Option<f64> {
@@ -189,7 +199,8 @@ impl ColumnArray for BooleanColumn {
         if self.non_null_count() == 0 {
             return Some(0.0);
         }
-        let has_false = self.0.iter().any(|&x| x == Some(false));
+        // let has_false = self.0.iter().any(|&x| x == Some(false));
+        let has_false = self.0.contains(&Some(false));
         Some(if has_false { 0.0 } else { 1.0 })
     }
 
@@ -197,7 +208,8 @@ impl ColumnArray for BooleanColumn {
         if self.non_null_count() == 0 {
             return Some(0.0);
         }
-        let has_true = self.0.iter().any(|&x| x == Some(true));
+        // let has_true = self.0.iter().any(|&x| x == Some(true));
+        let has_true = self.0.contains(&Some(true));
         Some(if has_true { 1.0 } else { 0.0 })
     }
 }
@@ -278,4 +290,66 @@ fn parse_bools(raw_data: &[&str]) -> Option<Vec<Option<bool>>> {
         }
     }
     Some(result)
+}
+
+impl From<Vec<i64>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<i64>) -> Self {
+        let data: Vec<Option<i64>> = data.into_iter().map(Some).collect();
+        Box::new(IntegerColumn(data))
+    }
+}
+
+// Vec<Option<i64>> -> IntegerColumn
+impl From<Vec<Option<i64>>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<Option<i64>>) -> Self {
+        Box::new(IntegerColumn(data))
+    }
+}
+
+// Vec<f64> -> FloatColumn
+impl From<Vec<f64>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<f64>) -> Self {
+        let data: Vec<Option<f64>> = data.into_iter().map(Some).collect();
+        Box::new(FloatColumn(data))
+    }
+}
+
+impl From<Vec<String>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<String>) -> Self {
+        let data: Vec<Option<String>> = data.into_iter().map(Some).collect();
+        Box::new(StringColumn(data))
+    }
+}
+
+impl From<&[i64]> for Box<dyn ColumnArray> {
+    fn from(data: &[i64]) -> Self {
+        Vec::from(data).into()
+    }
+}
+
+impl From<Vec<Option<f64>>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<Option<f64>>) -> Self {
+        Box::new(FloatColumn(data))
+    }
+}
+
+impl From<Vec<Option<String>>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<Option<String>>) -> Self {
+        Box::new(StringColumn(data))
+    }
+}
+
+// Vec<bool> -> BooleanColumn
+impl From<Vec<bool>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<bool>) -> Self {
+        let data: Vec<Option<bool>> = data.into_iter().map(Some).collect();
+        Box::new(BooleanColumn(data))
+    }
+}
+
+// Vec<Option<bool>> -> BooleanColumn
+impl From<Vec<Option<bool>>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<Option<bool>>) -> Self {
+        Box::new(BooleanColumn(data))
+    }
 }
