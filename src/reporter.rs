@@ -37,7 +37,7 @@ pub fn generate_wide_report(df: &DataFrame) -> DataFrame {
         max_col.into(),      // Vec<Option<f64>> -> Box<dyn ColumnArray>
     ];
 
-    DataFrame::new(Some(headers), columns)
+    DataFrame::new(Some(headers), columns).unwrap()
 }
 
 // pub fn generate_long_report(df: &DataFrame) -> DataFrame {

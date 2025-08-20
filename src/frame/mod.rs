@@ -1,6 +1,8 @@
+mod error;
+
 use crate::series::{ColumnArray, parse_column};
 use csv::Reader;
-use std::error::Error;
+pub use error::DataFrameError;
 use std::fmt;
 
 #[derive(Debug)]
@@ -10,7 +12,7 @@ pub struct DataFrame {
 }
 
 impl DataFrame {
-    pub fn new<C>(headers: Option<Vec<String>>, columns: Vec<C>) -> Self
+    pub fn new<C>(headers: Option<Vec<String>>, columns: Vec<C>) -> Result<Self, DataFrameError>
     where
         C: Into<Box<dyn ColumnArray>>,
     {
@@ -20,11 +22,10 @@ impl DataFrame {
         let headers = headers.unwrap_or_default();
 
         if !headers.is_empty() && !columns.is_empty() && headers.len() != columns.len() {
-            panic!(
-                "Headers and columns have different size: headers={}, columns={}",
-                headers.len(),
-                columns.len()
-            );
+            return Err(DataFrameError::HeadersColumnsLengthMismatch {
+                headers: headers.len(),
+                columns: columns.len(),
+            });
         }
 
         // Validate all columns have same length
@@ -32,31 +33,32 @@ impl DataFrame {
             for (i, col) in columns.iter().enumerate() {
                 if col.len() != expected_len {
                     let header_name = headers.get(i).map(|s| s.as_str()).unwrap_or("unknown");
-                    panic!(
-                        "Column '{}' has length {} but expected {}",
-                        header_name,
-                        col.len(),
-                        expected_len
-                    );
+                    return Err(DataFrameError::ColumnsLengthMismatch {
+                        column: header_name.to_string(),
+                        expected: expected_len,
+                        actual: col.len(),
+                    });
                 }
             }
         }
 
-        DataFrame {
+        Ok(DataFrame {
             headers: Some(headers),
             columns,
-        }
+        })
     }
 
-    pub fn from_columns(headers: Option<Vec<String>>, columns: Vec<Box<dyn ColumnArray>>) -> Self {
+    pub fn from_columns(
+        headers: Option<Vec<String>>,
+        columns: Vec<Box<dyn ColumnArray>>,
+    ) -> Result<Self, DataFrameError> {
         let headers = headers.unwrap_or_default();
 
         if !headers.is_empty() && !columns.is_empty() && headers.len() != columns.len() {
-            panic!(
-                "Headers and columns have different size: headers={}, columns={}",
-                headers.len(),
-                columns.len()
-            );
+            return Err(DataFrameError::HeadersColumnsLengthMismatch {
+                headers: headers.len(),
+                columns: columns.len(),
+            });
         }
 
         // Validate all columns have same length
@@ -64,23 +66,25 @@ impl DataFrame {
             for (i, col) in columns.iter().enumerate() {
                 if col.len() != expected_len {
                     let header_name = headers.get(i).map(|s| s.as_str()).unwrap_or("unknown");
-                    panic!(
-                        "Column '{}' has length {} but expected {}",
-                        header_name,
-                        col.len(),
-                        expected_len
-                    );
+                    return Err(DataFrameError::ColumnsLengthMismatch {
+                        column: header_name.to_string(),
+                        expected: expected_len,
+                        actual: col.len(),
+                    });
                 }
             }
         }
 
-        DataFrame {
+        Ok(DataFrame {
             headers: Some(headers),
             columns,
-        }
+        })
     }
 
-    pub fn from_strings(headers: Option<Vec<String>>, raw_columns: Vec<Vec<String>>) -> Self {
+    pub fn from_strings(
+        headers: Option<Vec<String>>,
+        raw_columns: Vec<Vec<String>>,
+    ) -> Result<Self, DataFrameError> {
         // Convert raw string columns to properly typed columns using parse_column
         let columns: Vec<Box<dyn ColumnArray>> = raw_columns
             .into_iter()
@@ -93,42 +97,43 @@ impl DataFrame {
         let headers = headers.unwrap_or_default();
 
         if !headers.is_empty() && !columns.is_empty() && headers.len() != columns.len() {
-            panic!(
-                "Headers and columns have different size: headers={}, columns={}",
-                headers.len(),
-                columns.len()
-            );
+            return Err(DataFrameError::HeadersColumnsLengthMismatch {
+                headers: headers.len(),
+                columns: columns.len(),
+            });
         }
 
-        DataFrame {
+        Ok(DataFrame {
             headers: Some(headers),
             columns,
-        }
+        })
     }
 
-    pub fn from_csv(filename: &str) -> Result<Self, Box<dyn Error>> {
-        let mut reader = Reader::from_path(filename)?;
+    pub fn from_csv(filename: &str) -> Result<Self, DataFrameError> {
+        let mut reader =
+            Reader::from_path(filename).map_err(|e| DataFrameError::IoError(e.to_string()))?;
 
-        let headers: Vec<String> = reader.headers()?.iter().map(|h| h.to_string()).collect();
+        let headers: Vec<String> = reader
+            .headers()
+            .map_err(|e| DataFrameError::CsvError(e.to_string()))?
+            .iter()
+            .map(|h| h.to_string())
+            .collect();
 
         let cols_count = headers.len();
 
         let mut rows = Vec::new();
         for result in reader.records() {
-            let record = result?;
+            let record = result.map_err(|e| DataFrameError::CsvError(e.to_string()))?;
             let row: Vec<String> = record.iter().map(|r| r.to_string()).collect();
 
             if row.len() != cols_count {
-                return Err(format!(
-                    "Row {} has {} columns but expected {} (headers: {})",
-                    rows.len() + 1,
-                    row.len(),
-                    cols_count,
-                    headers.join(", ")
-                )
-                .into());
+                return Err(DataFrameError::RowLengthMismatch {
+                    index: rows.len() + 1,
+                    expected: cols_count,
+                    actual: row.len(),
+                });
             }
-
             rows.push(row);
         }
 
@@ -147,7 +152,7 @@ impl DataFrame {
             Vec::new()
         };
 
-        Ok(Self::new(Some(headers), columns))
+        Self::new(Some(headers), columns)
     }
 
     pub fn empty() -> Self {
@@ -155,12 +160,6 @@ impl DataFrame {
             headers: None,
             columns: Vec::new(),
         }
-    }
-
-    pub fn read_csv(filename: &str) -> Self {
-        Self::from_csv(filename).unwrap_or_else(|e| {
-            panic!("Failed to read CSV '{}': {}", filename, e);
-        })
     }
 
     fn columns_count(&self) -> usize {
