@@ -54,7 +54,7 @@ fn test_sum_bool() {
 fn test_mean_bool() {
     let col = BooleanColumn(vec![Some(true), Some(false), Some(true)]);
     let mean_none = col.mean();
-    assert_eq!(mean_none, None);
+    assert_eq!(mean_none, Some(0.6666666666666666));
 }
 
 #[test]

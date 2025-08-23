@@ -212,6 +212,15 @@ impl ColumnArray for BooleanColumn {
         let has_true = self.0.contains(&Some(true));
         Some(if has_true { 1.0 } else { 0.0 })
     }
+
+    fn mean(&self) -> Option<f64> {
+        let non_nulls = self.non_null_count();
+        if non_nulls == 0 {
+            return None;
+        }
+        let sum = self.0.iter().filter_map(|&x| x).filter(|&x| x).count();
+        Some(sum as f64 / non_nulls as f64)
+    }
 }
 
 pub fn parse_column(column: Vec<&str>) -> Box<dyn ColumnArray> {
@@ -351,5 +360,12 @@ impl From<Vec<bool>> for Box<dyn ColumnArray> {
 impl From<Vec<Option<bool>>> for Box<dyn ColumnArray> {
     fn from(data: Vec<Option<bool>>) -> Self {
         Box::new(BooleanColumn(data))
+    }
+}
+
+impl From<Vec<usize>> for Box<dyn ColumnArray> {
+    fn from(data: Vec<usize>) -> Self {
+        let input = data.iter().map(|&x| Some(x as i64)).collect();
+        Box::new(IntegerColumn(input))
     }
 }

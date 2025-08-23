@@ -7,6 +7,18 @@ fn test_empty_dataframe_shape() {
 }
 
 #[test]
+fn test_load_df_from_file() {
+    let df = DataFrame::from_csv("sample.csv").unwrap();
+    assert_eq!(df.shape(), (10, 8))
+}
+
+#[test]
+#[should_panic]
+fn test_load_df_from_wrong_path() {
+    DataFrame::from_csv("not_exists.csv").unwrap();
+}
+
+#[test]
 fn test_headers_and_cols_correct_shape() {
     let headers = vec!["a".to_string(), "b".to_string()];
     let cols = vec![
@@ -86,7 +98,7 @@ fn test_get_column_invalid_index() {
 // Test typed column operations
 #[test]
 fn test_integer_column_statistics() {
-    let cols = vec![vec![1, 2, 3]];
+    let cols: Vec<Vec<i64>> = vec![vec![1, 2, 3]];
     let df = DataFrame::new(None, cols).unwrap();
     let column = df.get_column(0).unwrap();
     assert_eq!(column.sum(), Some(6.0));
@@ -157,7 +169,7 @@ fn test_empty_columns() {
 // Test typed integer column with DataFrame::new()
 #[test]
 fn test_typed_integer_column() {
-    let cols = vec![vec![1, 2, 3]];
+    let cols: Vec<Vec<i64>> = vec![vec![1, 2, 3]];
     let df = DataFrame::new(None, cols).unwrap();
     let col = df.get_column(0).unwrap();
     assert_eq!(col.sum(), Some(6.0));
@@ -183,10 +195,10 @@ fn test_typed_boolean_column() {
 
 #[test]
 fn test_create_df_from_homog_columns() {
-    let col1 = vec![1, 2, 3];
-    let col2 = vec![4, 5, 6];
-    let col3 = vec![7, 8, 9];
-    let col4 = vec![10, 11, 12];
+    let col1: Vec<i64> = vec![1, 2, 3];
+    let col2: Vec<i64> = vec![4, 5, 6];
+    let col3: Vec<i64> = vec![7, 8, 9];
+    let col4: Vec<i64> = vec![10, 11, 12];
 
     let columns: Vec<Box<dyn ColumnArray>> =
         vec![col1.into(), col2.into(), col3.into(), col4.into()];
@@ -199,7 +211,7 @@ fn test_create_df_from_homog_columns() {
 
 #[test]
 fn test_create_df_from_heter_columns() {
-    let col0 = vec![1, 2, 3];
+    let col0: Vec<i64> = vec![1, 2, 3];
     let col1 = vec![4.0, 5.0, 6.0];
     let col2 = vec!["7".to_string(), "8".to_string(), "9".to_string()];
     let col3 = vec![true, false, true];

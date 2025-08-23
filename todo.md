@@ -37,7 +37,7 @@
 - [x] Implement comprehensive statistical operations:
   - [x] `IntegerColumn`: `sum()`, `min()`, `max()`, `mean()` with proper null handling
   - [x] `FloatColumn`: `sum()`, `min()`, `max()`, `mean()` with NaN filtering
-  - [x] `BooleanColumn`: `sum()` (count true), `min()`/`max()` (0.0/1.0 logic)
+  - [x] `BooleanColumn`: `sum()` (count true), `min()`/`max()` (0.0/1.0 logic), `mean()` (proportion of true values)
   - [x] `StringColumn`: Statistical operations return `None` (appropriate fallback)
 - [x] Standardized return type: All statistical operations return `Option<f64>`
 - [x] Enhanced API ergonomics: Direct method calls on trait objects
@@ -47,6 +47,10 @@
   - [x] Each column type implements its own statistical operations
   - [x] DataFrame-level analysis is simple iteration over self-analyzing columns
 - [x] Add statistics to result formatting (wide and long report formats implemented)
+- [x] **Type Conversion System**: Added `From` trait implementations for seamless column creation
+  - [x] `From<Vec<usize>>` for converting indices/counts to `IntegerColumn`
+  - [x] Explicit `Vec<i64>` usage in tests for type clarity and maintainability
+- [x] **Statistical Operation Refinements**: Enhanced boolean mean calculation and edge case handling
 - [ ] Add advanced statistical operations (median, mode, variance)
 
 ## **CURRENT PRIORITY PHASES** 🎯
@@ -58,14 +62,6 @@
 - [ ] Add proper error handling for CLI command execution
 - [ ] Test end-to-end functionality with sample CSV files
 
-### **Phase 6B: NA Analysis Implementation** 🔥 (High Priority)  
-- [x] `ColumnArray` trait provides `null_count()` method for missing value analysis
-- [ ] Implement `analyze_nans()` function using trait methods:
-  - [ ] Use `ColumnArray.null_count()` for missing value counts
-  - [ ] Calculate NA percentages per column using `len()` and `null_count()`
-  - [ ] Return structured analysis results compatible with reporting system
-- [ ] Integration tests with sample data containing missing values
-- [ ] Format NA analysis results in reporter module
 
 ## Phase 6: Error Handling & Performance ✅ (COMPLETED)
 - [x] **Error Handling Standardization**: Convert all DataFrame operations to use proper Result types
@@ -78,6 +74,10 @@
   - [x] Keep only parsed `columns: Vec<Box<dyn ColumnArray>>`
   - [x] DataFrame now stores only headers and typed columns (no raw rows)
   - [x] All data access goes through efficient column-oriented storage
+- [x] **Test Infrastructure Robustness**: Fixed compilation issues and type handling
+  - [x] Resolved `From` trait implementation gaps for integer types
+  - [x] Enhanced test coverage with proper type annotations
+  - [x] All 39 tests passing with robust statistical operation verification
 - [ ] Performance optimization for large files
 - [ ] Better CLI help and usage
 - [ ] Documentation improvements
@@ -157,8 +157,10 @@
 - **✅ Achieved**: Professional module organization following industry standards
 - **✅ Achieved**: Formatted output with DataFrame Display trait
 - **✅ Achieved**: Statistical reporting in multiple formats (wide/long)
-- **✅ Achieved**: Comprehensive test coverage for core functionality (37 tests passing)
+- **✅ Achieved**: Comprehensive test coverage for core functionality (39 tests passing)
+- **✅ Achieved**: Robust statistical operations including boolean mean calculations
+- **✅ Achieved**: Type conversion system with explicit integer handling
 - **✅ Achieved**: Production-ready code quality following Rust idioms
 - [ ] Complete NA analysis functionality
 - [ ] Helpful error messages and user experience
-- [ ] Memory optimization (remove duplicate row storage)
+- **✅ Achieved**: Memory optimization (removed duplicate row storage)
