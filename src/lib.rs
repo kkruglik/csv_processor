@@ -9,7 +9,7 @@
 //! - **Self-Analyzing Columns**: Each column type implements its own statistical operations
 //! - **Professional Reporting**: Formatted statistical reports in multiple formats
 //!
-//! ## Quick Start
+//! ## Quick Start:
 //!
 //! ```rust,no_run
 //! use csv_processor::{DataFrame, reporter::generate_info_report};
