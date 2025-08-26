@@ -1,4 +1,4 @@
-use csv_processor::reporter::generate_wide_report;
+use csv_processor::reporter::{generate_info_report, generate_na_report};
 use csv_processor::{Command, DataFrame, parse_config};
 use std::{env, process};
 
@@ -13,19 +13,21 @@ fn main() {
         }
     };
 
-    match config.command() {
-        Command::CheckNAs => {
-            println!("Checking NAs in file: {}", config.filename());
+    if let Ok(df) = DataFrame::from_csv(config.filename()) {
+        match config.command() {
+            Command::CheckNAs => {
+                println!("Checking NAs in file: {}", config.filename());
+                let report = generate_na_report(&df);
+                println!("{}", report)
+            }
+            Command::Info => {
+                println!("Calculating statistics for file: {}", config.filename());
+                let report = generate_info_report(&df);
+                println!("{}", report)
+            }
         }
-        Command::CalculateStatistics => {
-            println!("Calculating statistics for file: {}", config.filename());
-        }
+    } else {
+        eprintln!("Error: Failed to read file");
+        process::exit(1);
     }
-
-    let df = DataFrame::from_csv(config.filename()).unwrap();
-
-    println!("{}", df);
-
-    let long_report = generate_wide_report(&df);
-    println!("{}", long_report)
 }

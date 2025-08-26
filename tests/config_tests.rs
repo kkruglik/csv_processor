@@ -2,14 +2,8 @@ use csv_processor::config::*;
 
 #[test]
 fn test_parse_command_success() {
-    assert_eq!(
-        parse_command("check_na".to_string()).unwrap(),
-        Command::CheckNAs
-    );
-    assert_eq!(
-        parse_command("calculate_statistics".to_string()).unwrap(),
-        Command::CalculateStatistics
-    );
+    assert_eq!(parse_command("na".to_string()).unwrap(), Command::CheckNAs);
+    assert_eq!(parse_command("info".to_string()).unwrap(), Command::Info);
 }
 
 #[test]

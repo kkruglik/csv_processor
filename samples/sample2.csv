@@ -1,0 +1,21 @@
+employee_id,name,age,salary,department,is_remote,start_date,performance_score,bonus_percentage
+1,Alice Johnson,28,75000.50,Engineering,true,2021-03-15,4.2,12.5
+2,Bob Smith,35,,Marketing,false,2019-07-22,3.8,8.0
+3,Carol Davis,42,95000.00,Engineering,true,2018-01-10,4.7,15.2
+4,David Wilson,,68000.25,Sales,false,2022-05-03,3.5,
+5,Emma Brown,31,82000.00,,true,2020-11-18,4.1,10.8
+6,Frank Miller,29,71000.75,Marketing,false,2021-09-07,3.9,9.5
+7,Grace Lee,38,105000.00,Engineering,true,2017-04-12,,18.0
+8,,33,73000.50,Sales,false,2022-01-25,3.7,7.2
+9,Henry Clark,45,88000.00,Marketing,true,2019-12-05,4.3,13.1
+10,Ivy Green,27,69000.25,Sales,,2021-06-30,3.6,6.8
+11,Jack Taylor,52,125000.00,Engineering,false,2015-08-20,4.8,20.0
+12,Karen White,36,91000.75,Marketing,true,2020-02-14,4.0,11.5
+13,Leo Martinez,41,,Sales,false,2018-10-03,3.4,5.5
+14,Maya Patel,29,77000.50,Engineering,true,2022-04-18,4.4,14.2
+15,Noah Johnson,34,83000.00,Marketing,,2019-11-28,3.8,
+16,Olivia Davis,26,65000.75,Sales,false,2023-01-09,3.3,4.8
+17,Paul Wilson,48,110000.00,,true,2016-06-15,4.6,17.5
+18,Quinn Brown,31,79000.25,Marketing,false,2021-08-12,4.2,12.0
+19,Ruby Miller,37,93000.50,Engineering,true,,4.5,16.3
+20,Sam Lee,44,101000.00,Sales,false,2018-03-07,4.1,13.8

@@ -15,7 +15,7 @@ A high-performance command-line tool for CSV data analysis built in Rust, featur
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/csv_processor
+git clone https://github.com/kkruglik/csv_processor
 cd csv_processor
 cargo build --release
 ```
@@ -24,13 +24,13 @@ cargo build --release
 
 ```bash
 # Check for missing values
-cargo run check_na sample.csv
+cargo run na sample.csv
 
 # Calculate comprehensive statistics
-cargo run calculate_statistics sample.csv
+cargo run info sample.csv
 
 # Run with release build for better performance
-cargo run --release calculate_statistics large_file.csv
+cargo run --release info large_file.csv
 ```
 
 ## Sample Output
@@ -150,13 +150,13 @@ id,name,age,salary,department,active,start_date,score
 ### Command Examples
 ```bash
 # Analyze missing values
-cargo run check_na employee_data.csv
+cargo run na employee_data.csv
 
 # Generate statistical report
-cargo run calculate_statistics sales_data.csv
+cargo run info sales_data.csv
 
 # Process large files with release build
-cargo run --release calculate_statistics large_dataset.csv
+cargo run --release info large_dataset.csv
 ```
 
 ## Contributing

@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub enum Command {
     CheckNAs,
-    CalculateStatistics,
+    Info,
 }
 
 #[derive(Debug, PartialEq)]
@@ -23,7 +23,7 @@ impl std::fmt::Display for ConfigError {
             ConfigError::UnknownCommand(cmd) => {
                 write!(
                     f,
-                    "Unknown command '{}'. Available: check_na, calculate_statistics",
+                    "Unknown command '{}'. Available: na, info",
                     cmd
                 )
             }
@@ -51,13 +51,34 @@ impl Config {
 
 pub fn parse_command(command: String) -> Result<Command, ConfigError> {
     match command.to_lowercase().as_str() {
-        "check_na" => Ok(Command::CheckNAs),
-        "calculate_statistics" => Ok(Command::CalculateStatistics),
+        "na" => Ok(Command::CheckNAs),
+        "info" => Ok(Command::Info),
         _ => Err(ConfigError::UnknownCommand(command)),
     }
 }
 
+pub fn print_help() {
+    println!("CSV Analytics Tool");
+    println!();
+    println!("USAGE:");
+    println!("    csv_processor <COMMAND> <FILE>");
+    println!();
+    println!("COMMANDS:");
+    println!("    na      Check for missing values (NAs) in CSV file");
+    println!("    info    Calculate statistics for CSV file");
+    println!();
+    println!("EXAMPLES:");
+    println!("    csv_processor na sample.csv");
+    println!("    csv_processor info sample.csv");
+}
+
 pub fn parse_config(args: &[String]) -> Result<Config, ConfigError> {
+    // Check for help flags
+    if args.len() == 1 || (args.len() == 2 && (args[1] == "--help" || args[1] == "-h" || args[1] == "help")) {
+        print_help();
+        std::process::exit(0);
+    }
+
     if args.len() < 3 {
         return Err(ConfigError::MissingArguments(
             "Not enough arguments passed!".to_string(),

@@ -8,14 +8,14 @@ fn test_empty_dataframe_shape() {
 
 #[test]
 fn test_load_df_from_file() {
-    let df = DataFrame::from_csv("sample.csv").unwrap();
+    let df = DataFrame::from_csv("samples/sample.csv").unwrap();
     assert_eq!(df.shape(), (10, 8))
 }
 
 #[test]
 #[should_panic]
 fn test_load_df_from_wrong_path() {
-    DataFrame::from_csv("not_exists.csv").unwrap();
+    DataFrame::from_csv("samples/not_exists.csv").unwrap();
 }
 
 #[test]
