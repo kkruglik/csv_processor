@@ -1,0 +1,25 @@
+name: Publish
+
+on:
+  workflow_run:
+    workflows:
+      - "Build and Test"
+    types:
+      - completed
+    branches:
+      - main
+
+env:
+  CARGO_REGISTRY_TOKEN: "${{ secrets.CARGO_REGISTRY_TOKEN }}"
+
+jobs:
+  publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout files"
+        uses: "actions/checkout@v4"
+
+      - name: "Publish to crates.io"
+        run: cargo publish --token ${{ env.CARGO_REGISTRY_TOKEN }}
