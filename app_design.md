@@ -1,8 +1,12 @@
-# CSV Analytics Tool - Application Design
+# CSV Processor - Application Design
 
 ## Project Description
 
-A command-line tool for CSV data analysis built in Rust. Features automatic type inference, embedded statistical operations, and a professional module architecture following industry patterns from Polars and Apache Arrow.
+A **Rust library and CLI tool** for CSV data analysis. Features automatic type inference, embedded statistical operations, and a professional module architecture following industry patterns from Polars and Apache Arrow.
+
+## Dual Purpose Design
+- **📚 Rust Library** - Clean API for embedding CSV analysis in applications
+- **🖥️ CLI Tool** - Command-line interface for direct usage
 
 ## Architecture
 
@@ -22,20 +26,33 @@ CLI Args → Config → DataFrame (self-analyzing columns) → Formatted Output
 
 ```
 src/
-├── lib.rs           # ✅ Public API, re-exports
-├── config.rs        # ✅ CLI parsing (Command enum, Config struct)
-├── types.rs         # ✅ Core types (Dtype, CsvError)
-├── series/          # ✅ Column-oriented data structures (Polars pattern)
-│   ├── mod.rs       # ✅ Re-exports for series functionality
-│   └── array.rs     # ✅ ColumnArray trait with embedded statistical operations
-├── frame/           # ✅ DataFrame operations and I/O
-│   ├── mod.rs       # ✅ DataFrame struct with headers, rows, typed columns
-│   ├── error.rs     # ✅ DataFrameError enum with proper error handling
-│   └── io.rs        # ✅ CSV file loading with load_dataframe()
-├── scalar/          # ✅ Cell-level operations and values
-│   └── mod.rs       # ✅ CellValue enum with utility methods
-├── reporter.rs      # ✅ Statistical report generation (wide/long formats)
-└── main.rs          # ✅ CLI entry point
+├── lib.rs                 # ✅ Library interface with documentation
+├── bin/
+│   └── csv_processor.rs   # ✅ CLI binary (separated from library)
+├── config.rs              # ✅ CLI parsing (exported for advanced use)
+├── types.rs               # ✅ Core types (Dtype, CsvError)
+├── series/                # ✅ Column-oriented data structures (Polars pattern)
+│   ├── mod.rs             # ✅ Re-exports for series functionality
+│   └── array.rs           # ✅ ColumnArray trait with embedded statistical operations
+├── frame/                 # ✅ DataFrame operations and I/O
+│   ├── mod.rs             # ✅ DataFrame struct with headers, typed columns
+│   ├── error.rs           # ✅ DataFrameError enum with proper error handling
+│   └── io.rs              # ✅ CSV file loading with load_dataframe()
+├── scalar/                # ✅ Cell-level operations and values
+│   └── mod.rs             # ✅ CellValue enum with utility methods
+└── reporter.rs            # ✅ Statistical report generation (wide/long formats)
+```
+
+### Library + Binary Configuration
+```toml
+# Cargo.toml
+[[bin]]
+name = "csv_processor"
+path = "src/bin/csv_processor.rs"
+
+[lib]
+name = "csv_processor"
+path = "src/lib.rs"
 ```
 
 ## Key Design Decisions
@@ -54,14 +71,30 @@ src/
 - Display and Error trait implementations for user-friendly messages
 
 ### Core Components
-- **Config**: CLI argument parsing with Command enum
-- **DataFrame**: Main data container with optional headers/rows, Display formatting, and self-analyzing typed columns
-- **ColumnArray**: Unified trait for data access AND statistical operations
+
+**Library API:**
+- **DataFrame**: Main data container with self-analyzing typed columns and Display formatting
+- **ColumnArray**: Unified trait for polymorphic column access AND statistical operations
 - **CellValue**: Enhanced enum with utility methods (is_null, data_type, Display)
-- **Series Module**: Column-oriented structures following industry patterns
+- **Reporter**: Statistical report generation functions (generate_info_report, generate_na_report)
+
+**Module Organization:**
+- **Series Module**: Column-oriented structures following Polars/Arrow patterns
 - **Frame Module**: DataFrame operations, CSV I/O, and formatted display
 - **Scalar Module**: Cell-level operations and conversions
-- **Reporter Module**: Statistical report generation in wide and long formats
+- **Config Module**: CLI parsing (exported for advanced library use)
+
+**Library Interface (src/lib.rs):**
+```rust
+// Core exports for library users
+pub use frame::DataFrame;
+pub use scalar::CellValue;
+pub use series::ColumnArray;
+pub use types::{CsvError, Dtype};
+
+// CLI exports (optional for library users)
+pub use config::{Command, Config, ConfigError, parse_command, parse_config};
+```
 
 ## Current Status
 - ✅ **Foundation & Data Loading**: Complete with typed column system
@@ -88,6 +121,7 @@ src/
   - Robust test architecture with proper type handling
 - ✅ **Code Quality**: Idiomatic Rust patterns following clippy recommendations
 - ✅ **CLI Integration**: Complete with `na` and `info` commands, help system, and publication-ready
+- ✅ **Library Refactoring**: Clean library + binary separation with comprehensive documentation
 
 ## Progress Assessment
 
@@ -107,17 +141,18 @@ src/
 ### **Completion Status**
 
 **🎉 PROJECT COMPLETE**:
-✅ **CLI Integration** - Full command routing with `na` and `info` commands, comprehensive help system  
-✅ **NA Analysis Function** - Integrated into unified reporting system  
-✅ **Error Handling & UX** - Production-ready error messages with comprehensive DataFrameError system  
-✅ **Publication Ready** - Crates.io metadata, documentation, and clean repository  
+✅ **CLI Integration** - Full command routing with `na` and `info` commands, comprehensive help system
+✅ **NA Analysis Function** - Integrated into unified reporting system
+✅ **Error Handling & UX** - Production-ready error messages with comprehensive DataFrameError system
+✅ **Publication Ready** - Crates.io metadata, documentation, and clean repository
 ✅ **Professional Help** - `--help`, `-h`, `help` flags with usage examples
+✅ **Library + Binary** - Clean separation with comprehensive API documentation
 
 **📋 Future Enhancements (Optional)**:
-- **Advanced Statistics** - median, mode, variance operations  
+- **Advanced Statistics** - median, mode, variance operations
 - **Extended CLI Features** - Additional output formats, configuration options
 
 **🔮 Future Roadmap (Optional)**:
 - **Performance Optimizations** - Large file handling, streaming support
-- **Output Format Options** - JSON, CSV export capabilities  
+- **Output Format Options** - JSON, CSV export capabilities
 - **Advanced Analytics** - Correlation analysis, statistical significance testing

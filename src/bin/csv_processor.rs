@@ -1,5 +1,5 @@
 use csv_processor::reporter::{generate_info_report, generate_na_report};
-use csv_processor::{Command, DataFrame, parse_config};
+use csv_processor::{parse_config, Command, DataFrame};
 use std::{env, process};
 
 fn main() {

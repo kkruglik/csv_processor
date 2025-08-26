@@ -1,6 +1,12 @@
 # CSV Processor
 
-A high-performance command-line tool for CSV data analysis built in Rust, featuring automatic type inference, statistical analysis, and professional reporting capabilities.
+A high-performance **Rust library and CLI tool** for CSV data analysis, featuring automatic type inference, statistical analysis, and professional reporting capabilities.
+
+## 📦 Library + CLI Tool
+
+This project provides both:
+- **📚 Rust Library** - For embedding CSV analysis in your applications
+- **🖥️ CLI Tool** - For command-line data analysis
 
 ## Features
 
@@ -14,7 +20,18 @@ A high-performance command-line tool for CSV data analysis built in Rust, featur
 
 ## Installation
 
+### As a Library
+Add to your `Cargo.toml`:
+```toml
+[dependencies]
+csv_processor = "0.1.0"
+```
+
+### As a CLI Tool
 ```bash
+cargo install csv_processor
+
+# Or build from source
 git clone https://github.com/kkruglik/csv_processor
 cd csv_processor
 cargo build --release
@@ -22,15 +39,51 @@ cargo build --release
 
 ## Usage
 
+### 📚 Library Usage
+
+```rust
+use csv_processor::{DataFrame, reporter::{generate_info_report, generate_na_report}};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Load CSV file
+    let df = DataFrame::from_csv("data.csv")?;
+    
+    // Generate statistical report
+    let stats_report = generate_info_report(&df);
+    println!("Statistics:\n{}", stats_report);
+    
+    // Generate NA analysis report
+    let na_report = generate_na_report(&df);
+    println!("Missing Values:\n{}", na_report);
+    
+    // Access individual columns for custom analysis
+    if let Some(column) = df.get_column(0) {
+        println!("Column mean: {:?}", column.mean());
+        println!("Column nulls: {}", column.null_count());
+    }
+    
+    Ok(())
+}
+```
+
+### 🖥️ CLI Usage
+
 ```bash
 # Check for missing values
-cargo run na sample.csv
+csv_processor na sample.csv
 
-# Calculate comprehensive statistics
-cargo run info sample.csv
+# Calculate comprehensive statistics  
+csv_processor info sample.csv
 
-# Run with release build for better performance
-cargo run --release info large_file.csv
+# Get help
+csv_processor --help
+```
+
+**Development Usage:**
+```bash
+# When developing/building from source
+cargo run --bin csv_processor -- na sample.csv
+cargo run --bin csv_processor -- info sample.csv
 ```
 
 ## Sample Output
@@ -79,26 +132,58 @@ Column Analysis:
 - score: 3 missing values (30.0%)
 ```
 
+## API Reference
+
+### Core Types
+
+```rust
+use csv_processor::{DataFrame, ColumnArray, CellValue, reporter};
+
+// Main data container
+let df = DataFrame::from_csv("data.csv")?;
+
+// Access columns polymorphically  
+let column: &dyn ColumnArray = df.get_column(0).unwrap();
+
+// Statistical operations (all return Option<f64>)
+let mean = column.mean();
+let sum = column.sum();
+let min = column.min();
+let max = column.max();
+let nulls = column.null_count();
+
+// Generate reports
+let stats_report = reporter::generate_info_report(&df);
+let na_report = reporter::generate_na_report(&df);
+```
+
+### Key Traits
+
+- `ColumnArray` - Unified interface for column data and statistical operations
+- `Display` - Formatted output for DataFrames and reports
+
 ## Architecture
 
-### Core Design Principles
-- **Functional Design**: Pure functions over object-oriented patterns
-- **Self-Analyzing Columns**: Statistical operations embedded in column types
-- **Immutable Data Flow**: Transform data rather than mutate state
-- **Rust Idioms**: Leverage ownership system and proper error handling
-
-### Module Structure
+### Library + Binary Structure
 ```
 src/
-├── config.rs        # CLI parsing and configuration
-├── series/          # Column-oriented data structures (Polars-style)
-│   └── array.rs     # ColumnArray trait with statistical operations
-├── frame/           # DataFrame operations and CSV I/O
-│   └── mod.rs       # Main DataFrame implementation
-├── scalar/          # Cell-level operations and values
-├── reporter.rs      # Statistical report generation
-└── main.rs          # CLI entry point
+├── lib.rs              # Library interface with documentation
+├── bin/
+│   └── csv_processor.rs # CLI binary
+├── series/             # Column-oriented data structures (Polars-style)
+│   └── array.rs        # ColumnArray trait with statistical operations
+├── frame/              # DataFrame operations and CSV I/O
+│   └── mod.rs          # Main DataFrame implementation  
+├── scalar/             # Cell-level operations and values
+├── reporter.rs         # Statistical report generation
+└── config.rs           # CLI parsing (exported for advanced use)
 ```
+
+### Core Design Principles
+- **Library First**: Clean API for embedding in applications
+- **Self-Analyzing Columns**: Statistical operations embedded in column types
+- **Functional Design**: Pure functions over object-oriented patterns  
+- **Rust Idioms**: Leverage ownership system and proper error handling
 
 ### Key Data Types
 - **DataFrame**: Main container with typed columns and display formatting
@@ -147,16 +232,27 @@ id,name,age,salary,department,active,start_date,score
 3,Carol Davis,35,NA,Engineering,true,,9.2
 ```
 
-### Command Examples
+### Usage Examples
+
+**CLI Usage:**
 ```bash
 # Analyze missing values
-cargo run na employee_data.csv
+csv_processor na employee_data.csv
 
 # Generate statistical report
-cargo run info sales_data.csv
+csv_processor info sales_data.csv
 
-# Process large files with release build
-cargo run --release info large_dataset.csv
+# For development (building from source)
+cargo run --bin csv_processor -- na employee_data.csv
+```
+
+**Library Usage:**
+```rust
+use csv_processor::{DataFrame, reporter::generate_info_report};
+
+let df = DataFrame::from_csv("sales_data.csv")?;
+let report = generate_info_report(&df);
+println!("{}", report);
 ```
 
 ## Contributing
