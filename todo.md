@@ -100,8 +100,24 @@
 - [ ] Add correlation analysis between columns
 - [ ] Statistical significance testing
 
-## Phase 8: Enhanced Features 📋 (Low Priority)
-- [ ] Multiple output formats (JSON, CSV)
+## Phase 8: JSON Export Implementation 🚀 (Current Priority)
+- [ ] Add serde dependency with derive feature to Cargo.toml
+- [ ] Implement Serialize trait for CellValue enum with proper null handling
+- [ ] Create DataFrame JSON export methods:
+  - [ ] `to_json()` method for compact JSON string output
+  - [ ] `to_json_pretty()` method for formatted JSON output  
+  - [ ] `save_json()` method for writing JSON to file
+- [ ] Support multiple JSON output formats:
+  - [ ] Records format: `[{"col1": "val1", "col2": "val2"}, ...]`
+  - [ ] Columns format: `{"col1": ["val1", "val2"], "col2": ["val3", "val4"]}`
+  - [ ] Index format: `{"0": {"col1": "val1"}, "1": {"col2": "val2"}}`
+- [ ] Add comprehensive JSON serialization tests covering all data types
+- [ ] Update library documentation with JSON export usage examples
+- [ ] Add optional CLI command for JSON export: `csv_processor export --format json`
+- [ ] Integration testing with sample CSV files
+
+## Phase 9: Enhanced Features 📋 (Future Priority)
+- [ ] Multiple output formats (CSV, Parquet)
 - [ ] Column filtering options  
 - [ ] Streaming for very large files
 - [ ] Configuration file support
