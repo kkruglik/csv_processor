@@ -2,7 +2,7 @@
 //!
 //! A fast CSV analysis library with automatic type inference and comprehensive statistics.
 //!
-//! ## Features
+//! ## Features:
 //!
 //! - **Automatic Type Inference**: Intelligently detects integers, floats, booleans, and strings
 //! - **Statistical Operations**: Built-in sum, mean, min, max calculations for all numeric types
