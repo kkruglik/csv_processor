@@ -96,6 +96,86 @@ pub use types::{CsvError, Dtype};
 pub use config::{Command, Config, ConfigError, parse_command, parse_config};
 ```
 
+## JSON Export Implementation
+
+### Architecture Decision: Column-Level JSON Export
+Following industry patterns from Polars and Arrow, JSON serialization is implemented directly in the column trait system:
+
+```rust
+pub trait ColumnArray: std::fmt::Debug {
+    // Core interface
+    fn len(&self) -> usize;
+    fn get(&self, index: usize) -> Option<CellValue>;
+    
+    // Statistical operations
+    fn sum(&self) -> Option<f64>;
+    fn mean(&self) -> Option<f64>;
+    
+    // JSON export - embedded in the trait
+    fn to_json(&self) -> Vec<serde_json::Value>;
+}
+```
+
+### Performance-Optimized Implementation
+Each column type implements direct conversion from typed data to JSON values:
+
+- **IntegerColumn**: `Vec<Option<i64>>` → `Vec<serde_json::Value>` (single allocation)
+- **FloatColumn**: `Vec<Option<f64>>` → `Vec<serde_json::Value>` (with NaN/Infinity → null handling)
+- **StringColumn**: `Vec<Option<String>>` → `Vec<serde_json::Value>` (preserving strings)
+- **BooleanColumn**: `Vec<Option<bool>>` → `Vec<serde_json::Value>` (native boolean JSON)
+
+### DataFrame JSON Export
+The DataFrame provides a unified JSON export method that leverages column-level serialization:
+
+```rust
+impl DataFrame {
+    pub fn to_json(&self) -> Result<String, DataFrameError> {
+        let columns: Vec<Vec<serde_json::Value>> = self.columns
+            .iter()
+            .map(|col| col.to_json())  // Direct column serialization
+            .collect();
+            
+        let output = json!({
+            "headers": self.headers(),
+            "columns": columns
+        });
+        
+        serde_json::to_string(&output)
+    }
+}
+```
+
+### JSON Format: Columns-Oriented
+The current implementation exports data in columns format, optimized for analytical workflows:
+```json
+{
+  "headers": ["id", "name", "age", "salary", "active"],
+  "columns": [
+    [1, 2, 3, 4, 5],                    // id column (integers)
+    ["Alice", "Bob", null, "David"],     // name column (strings + nulls)
+    [28, 35, null, 42],                  // age column (integers + nulls) 
+    [75000.5, 65000, null, 82000],       // salary column (floats + nulls)
+    [true, false, true, false]           // active column (booleans)
+  ]
+}
+```
+
+### Type Preservation Benefits
+- **Integers**: Exported as JSON numbers (not strings)
+- **Floats**: Native JSON numbers with NaN/Infinity → null conversion
+- **Booleans**: Native JSON booleans (not "true"/"false" strings)
+- **Strings**: JSON strings
+- **Nulls**: Proper JSON null values
+
+### Error Handling
+Added `JsonError` variant to `DataFrameError` enum for comprehensive error handling:
+```rust
+pub enum DataFrameError {
+    // ... existing variants
+    JsonError(String),
+}
+```
+
 ## Current Status
 - ✅ **Foundation & Data Loading**: Complete with typed column system
 - ✅ **Module Architecture**: Reorganized following Polars/Arrow patterns
@@ -131,6 +211,7 @@ pub use config::{Command, Config, ConfigError, parse_command, parse_config};
 - **Sophisticated Architecture**: Polars/Arrow-inspired design with professional module organization
 - **Self-Analyzing Statistical Engine**: Embedded operations in column types with unified trait interface
 - **Complete Display System**: Formatted DataFrame output with proper truncation and wide/long reports
+- **JSON Export System**: Native JSON serialization for DataFrames and columns with proper type preservation
 - **Comprehensive Testing**: Well-structured test coverage across all core modules (39 tests passing)
 - **Excellent API Design**: Ergonomic trait-based polymorphism enabling direct method calls
 - **Production-Ready Code Quality**: Idiomatic Rust patterns, comprehensive error handling, and clippy compliance
@@ -143,6 +224,7 @@ pub use config::{Command, Config, ConfigError, parse_command, parse_config};
 **🎉 PROJECT COMPLETE**:
 ✅ **CLI Integration** - Full command routing with `na` and `info` commands, comprehensive help system
 ✅ **NA Analysis Function** - Integrated into unified reporting system
+✅ **JSON Export Functionality** - Native JSON serialization with `to_json()` methods for DataFrames and columns
 ✅ **Error Handling & UX** - Production-ready error messages with comprehensive DataFrameError system
 ✅ **Publication Ready** - Crates.io metadata, documentation, and clean repository
 ✅ **Professional Help** - `--help`, `-h`, `help` flags with usage examples
@@ -154,5 +236,6 @@ pub use config::{Command, Config, ConfigError, parse_command, parse_config};
 
 **🔮 Future Roadmap (Optional)**:
 - **Performance Optimizations** - Large file handling, streaming support
-- **Output Format Options** - JSON, CSV export capabilities
+- **Extended JSON Features** - Records format, pretty printing, file output
+- **Output Format Options** - CSV export, Parquet support
 - **Advanced Analytics** - Correlation analysis, statistical significance testing
