@@ -13,6 +13,7 @@ This project provides both:
 - **Automatic Type Inference**: Intelligently detects integers, floats, booleans, and strings
 - **Missing Value Analysis**: Comprehensive NA/null detection and reporting
 - **Statistical Operations**: Built-in sum, mean, min, max calculations for all numeric types
+- **JSON Export**: Native JSON serialization for DataFrames and columns
 - **Professional Output**: Formatted tables and statistical reports
 - **Fast Processing**: Rust-powered performance for large CSV files
 - **Self-Analyzing Columns**: Each column type implements its own statistical operations
@@ -56,10 +57,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let na_report = generate_na_report(&df);
     println!("Missing Values:\n{}", na_report);
     
+    // Export to JSON
+    let json_output = df.to_json()?;
+    println!("JSON: {}", json_output);
+    
     // Access individual columns for custom analysis
     if let Some(column) = df.get_column(0) {
         println!("Column mean: {:?}", column.mean());
         println!("Column nulls: {}", column.null_count());
+        let column_json = column.to_json();
+        println!("Column as JSON: {:?}", column_json);
     }
     
     Ok(())
@@ -152,6 +159,10 @@ let min = column.min();
 let max = column.max();
 let nulls = column.null_count();
 
+// JSON export
+let json_output = df.to_json()?;
+let column_json = column.to_json();
+
 // Generate reports
 let stats_report = reporter::generate_info_report(&df);
 let na_report = reporter::generate_na_report(&df);
@@ -159,7 +170,7 @@ let na_report = reporter::generate_na_report(&df);
 
 ### Key Traits
 
-- `ColumnArray` - Unified interface for column data and statistical operations
+- `ColumnArray` - Unified interface for column data, statistical operations, and JSON export
 - `Display` - Formatted output for DataFrames and reports
 
 ## Architecture
@@ -239,7 +250,7 @@ id,name,age,salary,department,active,start_date,score
 # Analyze missing values
 csv_processor na employee_data.csv
 
-# Generate statistical report
+# Generate statistical report (includes JSON export demonstration)
 csv_processor info sales_data.csv
 
 # For development (building from source)

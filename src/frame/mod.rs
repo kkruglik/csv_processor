@@ -1,9 +1,11 @@
 mod error;
 
-use crate::series::{ColumnArray, parse_column};
+use std::fmt;
+
+use crate::series::{parse_column, ColumnArray};
 use csv::Reader;
 pub use error::DataFrameError;
-use std::fmt;
+use serde_json::json;
 
 #[derive(Debug)]
 pub struct DataFrame {
@@ -187,6 +189,31 @@ impl DataFrame {
 
     pub fn get_column(&self, column_index: usize) -> Option<&Box<dyn ColumnArray>> {
         self.columns.get(column_index)
+    }
+
+    pub fn to_json(&self) -> Result<String, DataFrameError> {
+        let headers = self.headers.as_ref().unwrap().clone();
+        let mut columns: Vec<Vec<serde_json::Value>> = Vec::new();
+
+        let mut output_json = json!({
+            "headers": headers,
+            "columns": columns
+        });
+
+        for col_idx in 0..self.shape().1 {
+            let column = self.get_column(col_idx).unwrap();
+            let json_column = column.to_json();
+            // let raw_column: Vec<String> = column
+            //     .as_any()
+            //     .downcast_ref::<Vec<String>>()
+            //     .unwrap()
+            //     .clone();
+            columns.push(json_column);
+        }
+
+        output_json["columns"] = json!(columns);
+
+        Ok(serde_json::to_string(&output_json).unwrap())
     }
 }
 

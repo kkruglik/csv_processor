@@ -100,17 +100,20 @@
 - [ ] Add correlation analysis between columns
 - [ ] Statistical significance testing
 
-## Phase 8: JSON Export Implementation 🚀 (Current Priority)
-- [ ] Add serde dependency with derive feature to Cargo.toml
-- [ ] Implement Serialize trait for CellValue enum with proper null handling
-- [ ] Create DataFrame JSON export methods:
-  - [ ] `to_json()` method for compact JSON string output
+## Phase 8: JSON Export Implementation ✅ (COMPLETED)
+- [x] Add serde_json dependency to Cargo.toml
+- [x] Implement `to_json()` method for all ColumnArray types (IntegerColumn, FloatColumn, StringColumn, BooleanColumn)
+- [x] Create DataFrame JSON export methods:
+  - [x] `to_json()` method for compact JSON string output (columns format)
   - [ ] `to_json_pretty()` method for formatted JSON output  
   - [ ] `save_json()` method for writing JSON to file
-- [ ] Support multiple JSON output formats:
-  - [ ] Records format: `[{"col1": "val1", "col2": "val2"}, ...]`
-  - [ ] Columns format: `{"col1": ["val1", "val2"], "col2": ["val3", "val4"]}`
+- [x] Support JSON output format:
+  - [x] Columns format: `{"headers": [...], "columns": [[...], [...]]}`
+  - [ ] Records format: `[{"col1": "val1", "col2": "val2"}, ...]` 
   - [ ] Index format: `{"0": {"col1": "val1"}, "1": {"col2": "val2"}}`
+- [x] Add JsonError variant to DataFrameError enum for proper error handling
+- [x] Proper null handling in JSON serialization (None -> JSON null)
+- [x] CLI integration: JSON export demonstration in info command
 - [ ] Add comprehensive JSON serialization tests covering all data types
 - [ ] Update library documentation with JSON export usage examples
 - [ ] Add optional CLI command for JSON export: `csv_processor export --format json`

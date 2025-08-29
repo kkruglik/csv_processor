@@ -21,9 +21,15 @@ fn main() {
                 println!("{}", report)
             }
             Command::Info => {
-                println!("Calculating statistics for file: {}", config.filename());
                 let report = generate_info_report(&df);
-                println!("{}", report)
+                println!("{}", report);
+
+                // for i in 0..df.shape().1 {
+                //     let json_output = df.get_column(i).unwrap().to_json();
+                //     println!("Json column index {} output: {:?}", i, json_output);
+                // }
+                //
+                // println!("Json output: {}", df.to_json().unwrap());
             }
         }
     } else {
