@@ -19,6 +19,7 @@ pub enum DataFrameError {
     },
     CsvError(String),
     IoError(String),
+    JsonError(String),
 }
 
 impl fmt::Display for DataFrameError {
@@ -58,6 +59,9 @@ impl fmt::Display for DataFrameError {
                     "Row {} has {} columns but expected {} ",
                     index, actual, expected
                 )
+            }
+            DataFrameError::JsonError(msg) => {
+                write!(f, "Json export error: {}", msg)
             }
         }
     }

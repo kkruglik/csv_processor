@@ -1,4 +1,5 @@
 use crate::{CellValue, Dtype};
+use serde_json::{json, Value};
 
 pub trait ColumnArray: std::fmt::Debug {
     fn len(&self) -> usize;
@@ -26,6 +27,8 @@ pub trait ColumnArray: std::fmt::Debug {
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    fn to_json(&self) -> Vec<serde_json::Value>;
 }
 
 #[derive(Debug)]
@@ -41,6 +44,16 @@ pub struct StringColumn(pub Vec<Option<String>>);
 pub struct BooleanColumn(pub Vec<Option<bool>>);
 
 impl ColumnArray for IntegerColumn {
+    fn to_json(&self) -> Vec<serde_json::Value> {
+        self.0
+            .iter()
+            .map(|&x| match x {
+                Some(x) => json!(x),
+                None => Value::Null,
+            })
+            .collect()
+    }
+
     fn dtype(&self) -> Dtype {
         Dtype::Integer
     }
@@ -85,6 +98,16 @@ impl ColumnArray for IntegerColumn {
 }
 
 impl ColumnArray for FloatColumn {
+    fn to_json(&self) -> Vec<serde_json::Value> {
+        self.0
+            .iter()
+            .map(|&x| match x {
+                Some(x) => json!(x),
+                None => Value::Null,
+            })
+            .collect()
+    }
+
     fn dtype(&self) -> Dtype {
         Dtype::Float
     }
@@ -149,6 +172,16 @@ impl ColumnArray for FloatColumn {
 }
 
 impl ColumnArray for StringColumn {
+    fn to_json(&self) -> Vec<serde_json::Value> {
+        self.0
+            .iter()
+            .map(|x| match &x {
+                Some(ref x) => json!(x),
+                None => Value::Null,
+            })
+            .collect()
+    }
+
     fn dtype(&self) -> Dtype {
         Dtype::Str
     }
@@ -171,6 +204,16 @@ impl ColumnArray for StringColumn {
 }
 
 impl ColumnArray for BooleanColumn {
+    fn to_json(&self) -> Vec<serde_json::Value> {
+        self.0
+            .iter()
+            .map(|&x| match x {
+                Some(x) => json!(x),
+                None => Value::Null,
+            })
+            .collect()
+    }
+
     fn dtype(&self) -> Dtype {
         Dtype::Boolean
     }
