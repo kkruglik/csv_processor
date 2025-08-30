@@ -7,10 +7,8 @@ on:
       - completed
     branches:
       - main
-
 env:
   CARGO_REGISTRY_TOKEN: "${{ secrets.CARGO_REGISTRY_TOKEN }}"
-
 jobs:
   publish:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -18,13 +16,19 @@ jobs:
     steps:
       - name: "Checkout files"
         uses: "actions/checkout@v4"
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Install cargo-edit"
-        run: cargo install cargo-edit
+      - name: "Install cargo-release"
+        run: cargo install cargo-release
 
-      - name: "Bump version and publish"
+      - name: "Configure Git"
         run: |
-          cargo set-version --bump patch --allow-dirty
-          cargo publish --allow-dirty
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: "Release and Publish"
+        run: cargo release patch --execute --no-confirm --no-verify # --no-verify skips dirty checks
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
