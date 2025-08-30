@@ -31,7 +31,6 @@ codegen-units = 1 # Single codegen unit for better optimization
 panic = "abort"   # Don't generate unwinding code
 strip = true      # Remove debug symbols from binary
 
-
 [package.metadata.release]
 sign-commit = false
 sign-tag = false
