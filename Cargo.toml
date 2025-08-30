@@ -1,6 +1,6 @@
 [package]
 name = "csv_processor"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A fast command-line CSV analysis tool with automatic type inference and comprehensive statistics"
 license = "MIT OR Apache-2.0"
@@ -11,7 +11,6 @@ keywords = ["csv", "analytics", "statistics", "data", "cli"]
 categories = ["command-line-utilities", "data-structures"]
 authors = ["Kirill Kruglikov <kirillkruglikov@gmail.com>"]
 readme = "README.md"
-
 
 [[bin]]
 name = "csv_processor"
