@@ -12,6 +12,7 @@ categories = ["command-line-utilities", "data-structures"]
 authors = ["Kirill Kruglikov <kirillkruglikov@gmail.com>"]
 readme = "README.md"
 
+
 [[bin]]
 name = "csv_processor"
 path = "src/bin/csv_processor.rs"
