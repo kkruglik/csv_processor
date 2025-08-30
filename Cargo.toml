@@ -1,6 +1,6 @@
 [package]
 name = "csv_processor"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 description = "A fast command-line CSV analysis tool with automatic type inference and comprehensive statistics"
 license = "MIT OR Apache-2.0"
