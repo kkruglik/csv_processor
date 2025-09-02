@@ -1,4 +1,5 @@
 use csv_processor::series::*;
+use serde_json::{json, Value};
 
 #[test]
 fn test_sum_int() {
@@ -121,4 +122,67 @@ fn test_str_min() {
     ]);
 
     assert_eq!(col.min(), None);
+}
+
+#[test]
+fn test_import_string_col_to_json() {
+    let col = StringColumn(vec![
+        Some("apple".to_string()),
+        Some("banana".to_string()),
+        Some("cucumber".to_string()),
+    ]);
+
+    let result = vec![
+        json!("apple".to_string()),
+        json!("banana".to_string()),
+        json!("cucumber".to_string()),
+    ];
+
+    assert_eq!(col.to_json(), result)
+}
+
+#[test]
+fn test_import_int_col_to_json() {
+    let col = IntegerColumn(vec![Some(1), Some(2), Some(3), Some(4), Some(5)]);
+
+    let mut result = Vec::new();
+    for i in 1..=5 {
+        result.push(json!(i));
+    }
+    assert_eq!(col.to_json(), result)
+}
+
+#[test]
+fn test_import_float_col_to_json() {
+    let col = FloatColumn(vec![Some(1.0), Some(2.0), Some(3.0), Some(4.0), Some(5.0)]);
+
+    let mut result = Vec::new();
+    for i in 1..=5 {
+        result.push(json!(i as f64));
+    }
+    assert_eq!(col.to_json(), result)
+}
+
+#[test]
+fn test_import_bool_col_to_json() {
+    let col = BooleanColumn(vec![Some(true), Some(false), Some(true)]);
+    let result = vec![json!(true), json!(false), json!(true)];
+
+    assert_eq!(col.to_json(), result)
+}
+
+#[test]
+fn test_import_bool_col_with_nan_to_json() {
+    let col = BooleanColumn(vec![None, Some(false), Some(true)]);
+    let result = vec![Value::Null, json!(false), json!(true)];
+
+    assert_eq!(col.to_json(), result)
+}
+
+#[test]
+fn test_import_all_null_col_to_json() {
+    let col = FloatColumn(vec![None, None, None]);
+    let result = vec![Value::Null, Value::Null, Value::Null];
+
+    assert_eq!(col.to_json(), result)
 }
