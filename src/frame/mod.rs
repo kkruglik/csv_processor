@@ -13,6 +13,12 @@ pub struct DataFrame {
     columns: Vec<Box<dyn ColumnArray>>,
 }
 
+pub enum JsonExportOrient {
+    Records,
+    Values,
+    Columns,
+}
+
 impl DataFrame {
     pub fn new<C>(headers: Option<Vec<String>>, columns: Vec<C>) -> Result<Self, DataFrameError>
     where
@@ -203,11 +209,6 @@ impl DataFrame {
         for col_idx in 0..self.shape().1 {
             let column = self.get_column(col_idx).unwrap();
             let json_column = column.to_json();
-            // let raw_column: Vec<String> = column
-            //     .as_any()
-            //     .downcast_ref::<Vec<String>>()
-            //     .unwrap()
-            //     .clone();
             columns.push(json_column);
         }
 
