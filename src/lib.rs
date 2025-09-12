@@ -31,7 +31,7 @@ pub mod series;
 pub mod types;
 
 // Core data structures
-pub use frame::DataFrame;
+pub use frame::{DataFrame, JsonExportOrient};
 pub use scalar::CellValue;
 pub use series::ColumnArray;
 pub use types::{CsvError, Dtype};

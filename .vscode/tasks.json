@@ -1,0 +1,160 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Cargo Run - Info Sample",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "run",
+        "info",
+        "samples/sample.csv"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true
+      },
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "Cargo Run - Interactive",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "run",
+        "${input:command}",
+        "${input:file}"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "Cargo Test",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "test"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "Cargo Test - Verbose",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "test",
+        "--",
+        "--nocapture"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "Cargo Build",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "build"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "Cargo Build - Release",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "build",
+        "--release"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "Cargo Check",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "check"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "Cargo Clean",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "clean"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "command",
+      "description": "Command to run",
+      "default": "info",
+      "type": "promptString"
+    },
+    {
+      "id": "file",
+      "description": "File path",
+      "default": "samples/sample.csv",
+      "type": "promptString"
+    }
+  ]
+}

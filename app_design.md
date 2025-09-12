@@ -125,28 +125,33 @@ Each column type implements direct conversion from typed data to JSON values:
 - **BooleanColumn**: `Vec<Option<bool>>` → `Vec<serde_json::Value>` (native boolean JSON)
 
 ### DataFrame JSON Export
-The DataFrame provides a unified JSON export method that leverages column-level serialization:
+The DataFrame provides multiple JSON export orientations through the `JsonExportOrient` enum:
 
 ```rust
+pub enum JsonExportOrient {
+    Records,    // Row-oriented: [{"col1": "val1", "col2": "val2"}, ...]
+    Values,     // Indexed: [{"0": "val1", "1": "val2"}, ...]
+    Columns,    // Column-oriented: {"headers": [...], "columns": [[...], [...]]}
+}
+
 impl DataFrame {
-    pub fn to_json(&self) -> Result<String, DataFrameError> {
-        let columns: Vec<Vec<serde_json::Value>> = self.columns
-            .iter()
-            .map(|col| col.to_json())  // Direct column serialization
-            .collect();
-            
-        let output = json!({
-            "headers": self.headers(),
-            "columns": columns
-        });
+    pub fn to_json(&self, orient: JsonExportOrient) -> Result<String, DataFrameError> {
+        let result = match orient {
+            JsonExportOrient::Columns => self._to_json_with_columns(),
+            JsonExportOrient::Records => self._to_json_with_records(),
+            JsonExportOrient::Values => self._to_json_with_values(),
+        };
         
-        serde_json::to_string(&output)
+        serde_json::to_string(&result)
+            .map_err(|e| DataFrameError::JsonError(e.to_string()))
     }
 }
 ```
 
-### JSON Format: Columns-Oriented
-The current implementation exports data in columns format, optimized for analytical workflows:
+### JSON Export Formats
+The implementation supports three distinct JSON formats to accommodate different use cases:
+
+**Columns Format** (Analytics-Optimized):
 ```json
 {
   "headers": ["id", "name", "age", "salary", "active"],
@@ -158,6 +163,24 @@ The current implementation exports data in columns format, optimized for analyti
     [true, false, true, false]           // active column (booleans)
   ]
 }
+```
+
+**Records Format** (Row-Oriented):
+```json
+[
+  {"id": 1, "name": "Alice", "age": 28, "salary": 75000.5, "active": true},
+  {"id": 2, "name": "Bob", "age": 35, "salary": 65000, "active": false},
+  {"id": 3, "name": null, "age": null, "salary": null, "active": true}
+]
+```
+
+**Values Format** (Indexed):
+```json
+[
+  {"0": 1, "1": "Alice", "2": 28, "3": 75000.5, "4": true},
+  {"0": 2, "1": "Bob", "2": 35, "3": 65000, "4": false},
+  {"0": 3, "1": null, "2": null, "3": null, "4": true}
+]
 ```
 
 ### Type Preservation Benefits
@@ -224,7 +247,7 @@ pub enum DataFrameError {
 **🎉 PROJECT COMPLETE**:
 ✅ **CLI Integration** - Full command routing with `na` and `info` commands, comprehensive help system
 ✅ **NA Analysis Function** - Integrated into unified reporting system
-✅ **JSON Export Functionality** - Native JSON serialization with `to_json()` methods for DataFrames and columns
+✅ **JSON Export Functionality** - Native JSON serialization with multiple orientations (Columns, Records, Values) and comprehensive type preservation
 ✅ **Error Handling & UX** - Production-ready error messages with comprehensive DataFrameError system
 ✅ **Publication Ready** - Crates.io metadata, documentation, and clean repository
 ✅ **Professional Help** - `--help`, `-h`, `help` flags with usage examples
@@ -236,6 +259,6 @@ pub enum DataFrameError {
 
 **🔮 Future Roadmap (Optional)**:
 - **Performance Optimizations** - Large file handling, streaming support
-- **Extended JSON Features** - Records format, pretty printing, file output
+- **Extended JSON Features** - Pretty printing, file output, streaming JSON export
 - **Output Format Options** - CSV export, Parquet support
 - **Advanced Analytics** - Correlation analysis, statistical significance testing
