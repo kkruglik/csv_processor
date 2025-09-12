@@ -2,7 +2,10 @@ mod error;
 
 use std::fmt;
 
-use crate::series::{parse_column, ColumnArray};
+use crate::{
+    series::{parse_column, ColumnArray},
+    CellValue,
+};
 use csv::Reader;
 pub use error::DataFrameError;
 use serde_json::json;
@@ -197,8 +200,13 @@ impl DataFrame {
         self.columns.get(column_index)
     }
 
-    pub fn to_json(&self) -> Result<String, DataFrameError> {
-        let headers = self.headers.as_ref().unwrap().clone();
+    fn _to_json_with_columns(&self) -> serde_json::Value {
+        let headers = {
+            match self.headers.as_ref() {
+                Some(headers) => headers.clone(),
+                None => (0..self.shape().1).map(|i| i.to_string()).collect(),
+            }
+        };
         let mut columns: Vec<Vec<serde_json::Value>> = Vec::new();
 
         let mut output_json = json!({
@@ -213,8 +221,72 @@ impl DataFrame {
         }
 
         output_json["columns"] = json!(columns);
+        output_json
+    }
 
-        Ok(serde_json::to_string(&output_json).unwrap())
+    fn _to_json_with_records(&self) -> serde_json::Value {
+        let mut output_json: Vec<serde_json::Value> = vec![];
+        let headers = {
+            match self.headers.as_ref() {
+                Some(headers) => headers.clone(),
+                None => (0..self.shape().1).map(|i| i.to_string()).collect(),
+            }
+        };
+        for row_idx in 0..self.shape().0 {
+            let mut json_row = json!({});
+
+            for col_idx in 0..self.shape().1 {
+                let column = self.get_column(col_idx).unwrap();
+                let cell_value = column.get(row_idx).unwrap_or(crate::CellValue::Null);
+                match cell_value {
+                    CellValue::Str(s) => json_row[&headers[col_idx]] = json!(s),
+                    CellValue::Float(f) => json_row[&headers[col_idx]] = json!(f),
+                    CellValue::Integer(i) => json_row[&headers[col_idx]] = json!(i),
+                    CellValue::Boolean(b) => json_row[&headers[col_idx]] = json!(b),
+                    CellValue::Date(d) => json_row[&headers[col_idx]] = json!(d),
+                    CellValue::Null => json_row[&headers[col_idx]] = json!(null),
+                }
+            }
+            output_json.push(json_row);
+        }
+
+        json!(output_json)
+    }
+
+    fn _to_json_with_values(&self) -> serde_json::Value {
+        let mut output_json: Vec<serde_json::Value> = vec![];
+
+        for row_idx in 0..self.shape().0 {
+            let mut json_row = json!({});
+
+            for col_idx in 0..self.shape().1 {
+                let column = self.get_column(col_idx).unwrap();
+                let cell_value = column.get(row_idx).unwrap_or(crate::CellValue::Null);
+                match cell_value {
+                    CellValue::Str(s) => json_row[format!("{col_idx}")] = json!(s),
+                    CellValue::Float(f) => json_row[format!("{col_idx}")] = json!(f),
+                    CellValue::Integer(i) => json_row[format!("{col_idx}")] = json!(i),
+                    CellValue::Boolean(b) => json_row[format!("{col_idx}")] = json!(b),
+                    CellValue::Date(d) => json_row[format!("{col_idx}")] = json!(d),
+                    CellValue::Null => json_row[format!("{col_idx}")] = json!(null),
+                }
+            }
+            output_json.push(json_row);
+        }
+
+        json!(output_json)
+    }
+
+    pub fn to_json(&self, orient: JsonExportOrient) -> Result<String, DataFrameError> {
+        let result = match orient {
+            JsonExportOrient::Columns => self._to_json_with_columns(),
+            JsonExportOrient::Records => self._to_json_with_records(),
+            JsonExportOrient::Values => self._to_json_with_values(),
+        };
+        match serde_json::to_string(&result) {
+            Ok(s) => Ok(s),
+            Err(e) => Err(DataFrameError::JsonError(e.to_string())),
+        }
     }
 }
 

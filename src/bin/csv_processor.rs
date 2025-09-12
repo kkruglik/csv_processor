@@ -1,5 +1,8 @@
-use csv_processor::reporter::{generate_info_report, generate_na_report};
-use csv_processor::{parse_config, Command, DataFrame};
+use csv_processor::{
+    parse_config,
+    reporter::{generate_info_report, generate_na_report},
+    Command, DataFrame, JsonExportOrient,
+};
 use std::{env, process};
 
 fn main() {
@@ -32,6 +35,15 @@ fn main() {
                 // println!("Json output: {}", df.to_json().unwrap());
             }
         }
+
+        // let json_output_with_columns = df.to_json(JsonExportOrient::Columns).unwrap();
+        // println!("Json columns output: {}", json_output_with_columns);
+        //
+        // let json_output_with_records = df.to_json(JsonExportOrient::Records).unwrap();
+        // println!("Json records output: {}", json_output_with_records);
+        //
+        // let json_output_with_values = df.to_json(JsonExportOrient::Values).unwrap();
+        // println!("Json values output: {}", json_output_with_values);
     } else {
         eprintln!("Error: Failed to read file");
         process::exit(1);

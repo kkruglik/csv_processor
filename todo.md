@@ -1,6 +1,7 @@
 # CSV Analytics Tool - Development Roadmap
 
 ## Phase 1: Foundation ✅
+
 - [x] Project setup with Cargo
 - [x] CLI argument parsing (`config.rs`)
 - [x] Custom error types
@@ -8,7 +9,8 @@
 - [x] Module structure planning
 
 ## Phase 2: Data Loading ✅ (Complete)
-- [x] Create `DataFrame` struct (`frame/mod.rs`) 
+
+- [x] Create `DataFrame` struct (`frame/mod.rs`)
 - [x] Implement CSV file reading with `csv` crate (`frame/io.rs`)
 - [x] Add CSV parsing error handling (`types.rs` - `CsvError`)
 - [x] Implement typed column system (`series/array.rs`)
@@ -20,9 +22,11 @@
 - [x] Unit tests for DataFrame functionality (`tests/frame_tests.rs`)
 
 ## Phase 3: NA Analysis 🔄 → **MOVED TO CURRENT PRIORITY (Phase 6B)**
+
 *This phase has been reorganized into current priority Phase 6B above*
 
 ## Phase 4: Output Formatting ✅ (Complete)
+
 - [x] Create statistical reporter (`reporter.rs`)
 - [x] Implement DataFrame Display trait with formatted table output
 - [x] Add wide format statistical reports
@@ -32,6 +36,7 @@
 - [ ] CLI integration and testing → **MOVED TO PHASE 6A**
 
 ## Phase 5: Statistics Analysis ✅ (Unified ColumnArray Approach)
+
 - [x] **ARCHITECTURAL SHIFT**: Consolidated statistical operations into `ColumnArray` trait
 - [x] Removed separate `ChunkAgg<T>` trait in favor of unified interface
 - [x] Implement comprehensive statistical operations:
@@ -56,6 +61,7 @@
 ## **COMPLETED PHASES** ✅
 
 ### **Phase 6A: CLI Integration** ✅ (COMPLETED)
+
 - [x] Wire `check_na` command to NA analysis functionality (implemented as `na` command)
 - [x] Wire `calculate_statistics` command to statistical reporting system (implemented as `info` command)  
 - [x] Remove debugging code from `main.rs` and implement proper command routing
@@ -65,6 +71,7 @@
 - [x] Implement proper error handling in main.rs
 
 ### **Phase 7: Library Refactoring** ✅ (COMPLETED)
+
 - [x] Separate library and binary using `src/lib.rs` and `src/bin/csv_processor.rs`
 - [x] Add comprehensive library documentation with usage examples
 - [x] Configure Cargo.toml for library + binary publication
@@ -73,8 +80,8 @@
 - [x] Test library and binary both work correctly
 - [x] Update project documentation (app_design.md, todo.md)
 
-
 ## Phase 6: Error Handling & Performance ✅ (COMPLETED)
+
 - [x] **Error Handling Standardization**: Convert all DataFrame operations to use proper Result types
   - [x] Created `DataFrameError` enum with specific error variants (HeadersColumnsLengthMismatch, ColumnsLengthMismatch, RowLengthMismatch, CsvError, IoError)
   - [x] Implemented Display and Error traits for DataFrameError
@@ -95,12 +102,14 @@
 - [ ] Edge case handling
 
 ## Phase 7: Advanced Statistics 📋 (Medium Priority)
+
 - [ ] Add advanced statistical operations (median, mode, variance)
 - [ ] Implement percentile calculations
 - [ ] Add correlation analysis between columns
 - [ ] Statistical significance testing
 
 ## Phase 8: JSON Export Implementation ✅ (COMPLETED)
+
 - [x] Add serde_json dependency to Cargo.toml
 - [x] Implement `to_json()` method for all ColumnArray types (IntegerColumn, FloatColumn, StringColumn, BooleanColumn)
 - [x] Create DataFrame JSON export methods:
@@ -109,7 +118,7 @@
   - [ ] `save_json()` method for writing JSON to file
 - [x] Support JSON output format:
   - [x] Columns format: `{"headers": [...], "columns": [[...], [...]]}`
-  - [ ] Records format: `[{"col1": "val1", "col2": "val2"}, ...]` 
+  - [ ] Records format: `[{"col1": "val1", "col2": "val2"}, ...]`
   - [ ] Index format: `{"0": {"col1": "val1"}, "1": {"col2": "val2"}}`
 - [x] Add JsonError variant to DataFrameError enum for proper error handling
 - [x] Proper null handling in JSON serialization (None -> JSON null)
@@ -120,6 +129,7 @@
 - [ ] Integration testing with sample CSV files
 
 ## Phase 9: Enhanced Features 📋 (Future Priority)
+
 - [ ] Multiple output formats (CSV, Parquet)
 - [ ] Column filtering options  
 - [ ] Streaming for very large files
@@ -130,6 +140,7 @@
 ## Learning Goals
 
 ### Rust Fundamentals
+
 - [x] Rust project structure and modules
 - [x] Error handling with custom types (`Result<T,E>`, custom error enums)
 - [x] Testing patterns in Rust
@@ -149,6 +160,7 @@
 - [ ] Performance optimization techniques
 
 ### For Python Developers - Key Concepts to Master
+
 - [x] **Ownership system** - understand borrowing vs Python's garbage collection
 - [x] **Pattern matching** - `match` expressions vs Python's if/elif
 - [x] **Traits vs Inheritance** - composition over inheritance patterns
@@ -158,9 +170,10 @@
 - [ ] **Iterators and closures** - functional programming patterns
 
 ## Phase 6.5: Module Architecture Reorganization ✅ (COMPLETED)
+
 - [x] **MAJOR REFACTOR**: Reorganized module structure to follow Polars/Arrow patterns
 - [x] Created `series/` module for column-oriented data structures
-  - [x] Moved `columns.rs` → `series/array.rs` 
+  - [x] Moved `columns.rs` → `series/array.rs`
   - [x] Added proper re-exports in `series/mod.rs`
 - [x] Created `frame/` module for DataFrame operations
   - [x] Moved DataFrame struct to `frame/mod.rs`
@@ -174,12 +187,14 @@
 - [x] Updated documentation to reflect new structure
 
 **Benefits Achieved:**
+
 - ✅ Better separation of concerns  
 - ✅ Follows industry-standard patterns (Polars/Arrow)
 - ✅ More modular and extensible architecture
 - ✅ Clearer naming that matches functionality
 
 ## Success Criteria
+
 - Tool processes CSV files faster than equivalent Python scripts
 - Clean, maintainable code following Rust idioms
 - **✅ Achieved**: Ergonomic API design following industry patterns (Polars/Arrow)
