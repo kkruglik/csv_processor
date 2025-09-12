@@ -13,7 +13,7 @@ This project provides both:
 - **Automatic Type Inference**: Intelligently detects integers, floats, booleans, and strings
 - **Missing Value Analysis**: Comprehensive NA/null detection and reporting
 - **Statistical Operations**: Built-in sum, mean, min, max calculations for all numeric types
-- **JSON Export**: Native JSON serialization for DataFrames and columns
+- **JSON Export**: Native JSON serialization with multiple orientations (Columns, Records, Values)
 - **Professional Output**: Formatted tables and statistical reports
 - **Fast Processing**: Rust-powered performance for large CSV files
 - **Self-Analyzing Columns**: Each column type implements its own statistical operations
@@ -43,7 +43,7 @@ cargo build --release
 ### 📚 Library Usage
 
 ```rust
-use csv_processor::{DataFrame, reporter::{generate_info_report, generate_na_report}};
+use csv_processor::{DataFrame, JsonExportOrient, reporter::{generate_info_report, generate_na_report}};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load CSV file
@@ -57,9 +57,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let na_report = generate_na_report(&df);
     println!("Missing Values:\n{}", na_report);
     
-    // Export to JSON
-    let json_output = df.to_json()?;
-    println!("JSON: {}", json_output);
+    // Export to JSON with different orientations
+    let json_columns = df.to_json(JsonExportOrient::Columns)?;
+    println!("JSON (Columns): {}", json_columns);
+    
+    let json_records = df.to_json(JsonExportOrient::Records)?;
+    println!("JSON (Records): {}", json_records);
+    
+    let json_values = df.to_json(JsonExportOrient::Values)?;
+    println!("JSON (Values): {}", json_values);
     
     // Access individual columns for custom analysis
     if let Some(column) = df.get_column(0) {
@@ -139,12 +145,48 @@ Column Analysis:
 - score: 3 missing values (30.0%)
 ```
 
+### JSON Export Formats
+
+The library supports three JSON export orientations:
+
+**Columns Format (Analytics-Optimized)**
+```json
+{
+  "headers": ["id", "name", "age", "salary", "active"],
+  "columns": [
+    [1, 2, 3, 4, 5],
+    ["Alice", "Bob", null, "David", "Emma"],
+    [28, 35, null, 42, 31],
+    [75000.5, 65000, null, 82000, 71500],
+    [true, false, true, false, true]
+  ]
+}
+```
+
+**Records Format (Row-Oriented)**
+```json
+[
+  {"id": 1, "name": "Alice", "age": 28, "salary": 75000.5, "active": true},
+  {"id": 2, "name": "Bob", "age": 35, "salary": 65000, "active": false},
+  {"id": 3, "name": null, "age": null, "salary": null, "active": true}
+]
+```
+
+**Values Format (Indexed)**
+```json
+[
+  {"0": 1, "1": "Alice", "2": 28, "3": 75000.5, "4": true},
+  {"0": 2, "1": "Bob", "2": 35, "3": 65000, "4": false},
+  {"0": 3, "1": null, "2": null, "3": null, "4": true}
+]
+```
+
 ## API Reference
 
 ### Core Types
 
 ```rust
-use csv_processor::{DataFrame, ColumnArray, CellValue, reporter};
+use csv_processor::{DataFrame, ColumnArray, CellValue, JsonExportOrient, reporter};
 
 // Main data container
 let df = DataFrame::from_csv("data.csv")?;
@@ -159,8 +201,10 @@ let min = column.min();
 let max = column.max();
 let nulls = column.null_count();
 
-// JSON export
-let json_output = df.to_json()?;
+// JSON export with multiple orientations
+let json_columns = df.to_json(JsonExportOrient::Columns)?;
+let json_records = df.to_json(JsonExportOrient::Records)?;
+let json_values = df.to_json(JsonExportOrient::Values)?;
 let column_json = column.to_json();
 
 // Generate reports
@@ -259,11 +303,15 @@ cargo run --bin csv_processor -- na employee_data.csv
 
 **Library Usage:**
 ```rust
-use csv_processor::{DataFrame, reporter::generate_info_report};
+use csv_processor::{DataFrame, JsonExportOrient, reporter::generate_info_report};
 
 let df = DataFrame::from_csv("sales_data.csv")?;
 let report = generate_info_report(&df);
 println!("{}", report);
+
+// Export to different JSON formats
+let json_columns = df.to_json(JsonExportOrient::Columns)?;
+let json_records = df.to_json(JsonExportOrient::Records)?;
 ```
 
 ## Contributing
