@@ -92,7 +92,7 @@ impl DataFrame {
         })
     }
 
-    pub fn from_strings(
+    pub fn from_values(
         headers: Option<Vec<String>>,
         raw_columns: Vec<Vec<String>>,
     ) -> Result<Self, DataFrameError> {
@@ -124,6 +124,50 @@ impl DataFrame {
         let mut reader =
             Reader::from_path(filename).map_err(|e| DataFrameError::IoError(e.to_string()))?;
 
+        let headers: Vec<String> = reader
+            .headers()
+            .map_err(|e| DataFrameError::CsvError(e.to_string()))?
+            .iter()
+            .map(|h| h.to_string())
+            .collect();
+
+        let cols_count = headers.len();
+
+        let mut rows = Vec::new();
+        for result in reader.records() {
+            let record = result.map_err(|e| DataFrameError::CsvError(e.to_string()))?;
+            let row: Vec<String> = record.iter().map(|r| r.to_string()).collect();
+
+            if row.len() != cols_count {
+                return Err(DataFrameError::RowLengthMismatch {
+                    index: rows.len() + 1,
+                    expected: cols_count,
+                    actual: row.len(),
+                });
+            }
+            rows.push(row);
+        }
+
+        // Convert rows to columns
+        let columns: Vec<Box<dyn ColumnArray>> = if !rows.is_empty() {
+            (0..cols_count)
+                .map(|col_index| {
+                    let raw_column: Vec<&str> = rows
+                        .iter()
+                        .map(|row| row.get(col_index).map(|s| s.as_str()).unwrap_or(""))
+                        .collect();
+                    parse_column(raw_column)
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
+
+        Self::new(Some(headers), columns)
+    }
+
+    pub fn from_strings(content: &str) -> Result<Self, DataFrameError> {
+        let mut reader = Reader::from_reader(content.as_bytes());
         let headers: Vec<String> = reader
             .headers()
             .map_err(|e| DataFrameError::CsvError(e.to_string()))?
