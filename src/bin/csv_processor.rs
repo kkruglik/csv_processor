@@ -1,7 +1,7 @@
 use csv_processor::{
     parse_config,
     reporter::{generate_info_report, generate_na_report},
-    Command, DataFrame, JsonExportOrient,
+    Command, DataFrame,
 };
 use std::{env, process};
 
